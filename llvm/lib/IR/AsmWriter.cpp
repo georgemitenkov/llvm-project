@@ -615,6 +615,9 @@ void TypePrinting::print(Type *Ty, raw_ostream &OS) {
   case Type::IntegerTyID:
     OS << 'i' << cast<IntegerType>(Ty)->getBitWidth();
     return;
+  case Type::ByteTyID:
+    OS << 'b' << Ty->getByteBitWidth();
+    return;
 
   case Type::FunctionTyID: {
     FunctionType *FTy = cast<FunctionType>(Ty);

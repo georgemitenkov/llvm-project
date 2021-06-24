@@ -668,6 +668,8 @@ inline TypeSize DataLayout::getTypeSizeInBits(Type *Ty) const {
     // Get the layout annotation... which is lazily created on demand.
     return TypeSize::Fixed(
                         getStructLayout(cast<StructType>(Ty))->getSizeInBits());
+  case Type::ByteTyID:
+    return TypeSize::Fixed(Ty->getByteBitWidth());
   case Type::IntegerTyID:
     return TypeSize::Fixed(Ty->getIntegerBitWidth());
   case Type::HalfTyID:

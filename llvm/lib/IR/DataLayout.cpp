@@ -764,6 +764,8 @@ Align DataLayout::getAlignment(Type *Ty, bool abi_or_pref) const {
         abi_or_pref ? AggregateAlign.ABIAlign : AggregateAlign.PrefAlign;
     return std::max(Align, Layout->getAlignment());
   }
+  case Type::ByteTyID:
+    return getIntegerAlignment(Ty->getByteBitWidth(), abi_or_pref);
   case Type::IntegerTyID:
     return getIntegerAlignment(Ty->getIntegerBitWidth(), abi_or_pref);
   case Type::HalfTyID:

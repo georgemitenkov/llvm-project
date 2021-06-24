@@ -936,6 +936,11 @@ void ModuleBitcodeWriter::writeTypeTable() {
       Code = bitc::TYPE_CODE_INTEGER;
       TypeVals.push_back(cast<IntegerType>(T)->getBitWidth());
       break;
+    case Type::ByteTyID:
+      // BYTE: [width]
+      Code = bitc::TYPE_CODE_BYTE;
+      TypeVals.push_back(T->getByteBitWidth());
+      break;
     case Type::PointerTyID: {
       PointerType *PTy = cast<PointerType>(T);
       unsigned AddressSpace = PTy->getAddressSpace();

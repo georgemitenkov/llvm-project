@@ -162,8 +162,9 @@ typedef enum {
   LLVMX86_MMXTypeKind,   /**< X86 MMX */
   LLVMTokenTypeKind,     /**< Tokens */
   LLVMScalableVectorTypeKind, /**< Scalable SIMD vector type */
-  LLVMBFloatTypeKind,    /**< 16 bit brain floating point type */
-  LLVMX86_AMXTypeKind    /**< X86 AMX */
+  LLVMBFloatTypeKind,         /**< 16 bit brain floating point type */
+  LLVMX86_AMXTypeKind,        /**< X86 AMX */
+  LLVMByteTypeKind            /**< Arbitrary bit width bytes */
 } LLVMTypeKind;
 
 typedef enum {
@@ -1083,6 +1084,7 @@ void LLVMSetModuleInlineAsm(LLVMModuleRef M, const char *Asm);
  *
  *   types:
  *     integer type
+ *     byte type
  *     real type
  *     function type
  *     sequence types:
@@ -1165,6 +1167,42 @@ LLVMTypeRef LLVMInt64Type(void);
 LLVMTypeRef LLVMInt128Type(void);
 LLVMTypeRef LLVMIntType(unsigned NumBits);
 unsigned LLVMGetIntTypeWidth(LLVMTypeRef IntegerTy);
+
+/**
+ * @}
+ */
+
+/**
+ * @defgroup LLVMCCoreTypeByte Byte Types
+ *
+ * Functions in this section operate on byte types.
+ *
+ * @{
+ */
+
+/**
+ * Obtain a byte type from a context with specified bit width.
+ */
+LLVMTypeRef LLVMByte1TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByte8TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByte6TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByte32TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByte64TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByte128TypeInContext(LLVMContextRef C);
+LLVMTypeRef LLVMByteTypeInContext(LLVMContextRef C, unsigned NumBits);
+
+/**
+ * Obtain a byte type from the global context with a specified bit
+ * width.
+ */
+LLVMTypeRef LLVMByte1Type(void);
+LLVMTypeRef LLVMByte8Type(void);
+LLVMTypeRef LLVMByte16Type(void);
+LLVMTypeRef LLVMByte32Type(void);
+LLVMTypeRef LLVMByte64Type(void);
+LLVMTypeRef LLVMByte128Type(void);
+LLVMTypeRef LLVMByteType(unsigned NumBits);
+unsigned LLVMGetByteTypeWidth(LLVMTypeRef ByteTy);
 
 /**
  * @}
