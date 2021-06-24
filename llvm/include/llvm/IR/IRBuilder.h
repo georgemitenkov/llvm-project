@@ -2076,6 +2076,10 @@ public:
     return CreateCast(Instruction::BitCast, V, DestTy, Name);
   }
 
+  Value *CreateByteCast(Value *V, Type *DestTy, const Twine &Name = "") {
+    return CreateCast(Instruction::ByteCast, V, DestTy, Name);
+  }
+
   Value *CreateAddrSpaceCast(Value *V, Type *DestTy,
                              const Twine &Name = "") {
     return CreateCast(Instruction::AddrSpaceCast, V, DestTy, Name);

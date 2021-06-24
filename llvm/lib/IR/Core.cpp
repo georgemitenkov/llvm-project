@@ -3885,6 +3885,11 @@ LLVMValueRef LLVMBuildBitCast(LLVMBuilderRef B, LLVMValueRef Val,
   return wrap(unwrap(B)->CreateBitCast(unwrap(Val), unwrap(DestTy), Name));
 }
 
+LLVMValueRef LLVMBuildByteCast(LLVMBuilderRef B, LLVMValueRef Val,
+                               LLVMTypeRef DestTy, const char *Name) {
+  return wrap(unwrap(B)->CreateByteCast(unwrap(Val), unwrap(DestTy), Name));
+}
+
 LLVMValueRef LLVMBuildAddrSpaceCast(LLVMBuilderRef B, LLVMValueRef Val,
                                     LLVMTypeRef DestTy, const char *Name) {
   return wrap(unwrap(B)->CreateAddrSpaceCast(unwrap(Val), unwrap(DestTy), Name));

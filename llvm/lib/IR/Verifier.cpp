@@ -488,6 +488,7 @@ private:
   void visitIntToPtrInst(IntToPtrInst &I);
   void visitPtrToIntInst(PtrToIntInst &I);
   void visitBitCastInst(BitCastInst &I);
+  void visitByteCastInst(ByteCastInst &I);
   void visitAddrSpaceCastInst(AddrSpaceCastInst &I);
   void visitPHINode(PHINode &PN);
   void visitCallBase(CallBase &Call);
@@ -3073,6 +3074,13 @@ void Verifier::visitBitCastInst(BitCastInst &I) {
   Assert(
       CastInst::castIsValid(Instruction::BitCast, I.getOperand(0), I.getType()),
       "Invalid bitcast", &I);
+  visitInstruction(I);
+}
+
+void Verifier::visitByteCastInst(ByteCastInst &I) {
+  Assert(CastInst::castIsValid(Instruction::ByteCast, I.getOperand(0),
+                               I.getType()),
+         "Invalid bytecast", &I);
   visitInstruction(I);
 }
 

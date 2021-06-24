@@ -894,6 +894,7 @@ lltok::Kind LLLexer::LexIdentifier() {
   INSTKEYWORD(inttoptr,    IntToPtr);
   INSTKEYWORD(ptrtoint,    PtrToInt);
   INSTKEYWORD(bitcast,     BitCast);
+  INSTKEYWORD(bytecast,    ByteCast);
   INSTKEYWORD(addrspacecast, AddrSpaceCast);
   INSTKEYWORD(select,      Select);
   INSTKEYWORD(va_arg,      VAArg);

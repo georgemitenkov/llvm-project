@@ -5200,6 +5200,47 @@ public:
 };
 
 //===----------------------------------------------------------------------===//
+//                             ByteCastInst Class
+//===----------------------------------------------------------------------===//
+
+/// This class represents a cast for byte types. The cast can be either a no-op,
+/// zext/sext/trunc or ptrtoint/inttoptr depending on the underlying value that
+/// the byte stores.
+class ByteCastInst : public CastInst {
+protected:
+  // Note: Instruction needs to be a friend here to call cloneImpl.
+  friend class Instruction;
+
+  /// Clone an identical ByteCastInst.
+  ByteCastInst *cloneImpl() const;
+
+public:
+  /// Constructor with insert-before-instruction semantics
+  ByteCastInst(Value *S,                  ///< The value to be casted
+               Type *Ty,                  ///< The type to casted to
+               const Twine &NameStr = "", ///< A name for the new instruction
+               Instruction *InsertBefore =
+                   nullptr ///< Where to insert the new instruction
+  );
+
+  /// Constructor with insert-at-end-of-block semantics
+  ByteCastInst(
+      Value *S,               ///< The value to be casted
+      Type *Ty,               ///< The type to casted to
+      const Twine &NameStr,   ///< A name for the new instruction
+      BasicBlock *InsertAtEnd ///< The block to insert the instruction into
+  );
+
+  // Methods for support type inquiry through isa, cast, and dyn_cast:
+  static bool classof(const Instruction *I) {
+    return I->getOpcode() == ByteCast;
+  }
+  static bool classof(const Value *V) {
+    return isa<Instruction>(V) && classof(cast<Instruction>(V));
+  }
+};
+
+//===----------------------------------------------------------------------===//
 //                          AddrSpaceCastInst Class
 //===----------------------------------------------------------------------===//
 

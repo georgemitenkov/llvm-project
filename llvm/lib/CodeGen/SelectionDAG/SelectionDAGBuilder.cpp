@@ -3494,6 +3494,12 @@ void SelectionDAGBuilder::visitBitCast(const User &I) {
     setValue(&I, N);            // noop cast.
 }
 
+/// TODO: impllement this!
+void SelectionDAGBuilder::visitByteCast(const User &I) {
+  SDValue N = getValue(I.getOperand(0));
+  setValue(&I, N); // noop cast.
+}
+
 void SelectionDAGBuilder::visitAddrSpaceCast(const User &I) {
   const TargetLowering &TLI = DAG.getTargetLoweringInfo();
   const Value *SV = I.getOperand(0);
