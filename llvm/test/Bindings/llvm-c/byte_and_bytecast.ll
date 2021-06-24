@@ -3,9 +3,9 @@
 ; RUN: diff -w %t.orig %t.echo
 
 define void @foo(b8 %a, b16 %b, b64 %c) {
-  %1 = alloca b16, align 1
-  store b16 %b, b16* %1, align 1
-  %2 = load b16, b16* %1, align 1
+  %1 = alloca b16, align 2
+  store b16 %b, b16* %1, align 2
+  %2 = load b16, b16* %1, align 2
   %3 = bitcast b16 %2 to <2 x b8>
   %4 = bytecast <2 x b8> %3 to <2 x i8>
   %5 = bitcast <2 x i8> %4 to i16
