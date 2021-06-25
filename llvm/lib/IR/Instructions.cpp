@@ -3251,7 +3251,43 @@ CastInst::getCastOpcode(
   unsigned DestBits = DestTy->getPrimitiveSizeInBits(); // 0 for ptr
 
   // Run through the possibilities ...
-  if (DestTy->isIntegerTy()) {                      // Casting to integral
+  if (DestTy->isByteTy()) {                         // Casting to byte
+
+    // Casts int -> byte have the same pattern as int -> int casts.
+    if (SrcTy->isIntegerTy()) {
+      if (DestBits < SrcBits)
+        return Trunc;
+      if (DestBits > SrcBits) {
+        if (SrcIsSigned)
+          return SExt;
+        else
+          return ZExt;
+      }
+      return BitCast;
+    }
+
+    // Note that we do not support casts from floating-point types to byte
+    // types.
+    if (SrcTy->isVectorTy() &&
+        cast<VectorType>(SrcTy)->getElementType()->isFloatingPointTy()) {
+      assert(DestBits == SrcBits &&
+             "Casting vector to byte of different width");
+      return BitCast;
+    }
+
+    // Allow ptr -> byte casts.
+    if (SrcTy->isPointerTy())
+      return PtrToInt;
+
+    llvm_unreachable(
+        "Casting a non-first class or a floating-point type to a byte");
+
+  } else if (DestTy->isIntegerTy()) {               // Casting to integral
+
+    // ByteCast operates on same bit widths.
+    if (SrcTy->isByteTy() && DestBits == SrcBits)
+      return ByteCast;
+
     if (SrcTy->isIntegerTy()) {                     // Casting from integral
       if (DestBits < SrcBits)
         return Trunc;                               // int -> smaller int
@@ -3296,11 +3332,16 @@ CastInst::getCastOpcode(
              "Casting vector to floating point of different width");
       return BitCast;                             // same size, no-op cast
     }
-    llvm_unreachable("Casting pointer or non-first class to float");
+    llvm_unreachable(
+        "Casting pointer, byte or non-first class to floating point");
   } else if (DestTy->isVectorTy()) {
     assert(DestBits == SrcBits &&
            "Illegal cast to vector (wrong type or size)");
+    // Converting byte -> non-byte must be processed with a bytecast.
+    if (SrcTy->isVectorTy() && SrcTy->isByteOrByteVectorTy() && !DestTy->isByteOrByteVectorTy())
+      return ByteCast;
     return BitCast;
+
   } else if (DestTy->isPointerTy()) {
     if (SrcTy->isPointerTy()) {
       if (DestTy->getPointerAddressSpace() != SrcTy->getPointerAddressSpace())
@@ -3308,8 +3349,10 @@ CastInst::getCastOpcode(
       return BitCast;                               // ptr -> ptr
     } else if (SrcTy->isIntegerTy()) {
       return IntToPtr;                              // int -> ptr
+    } else if (SrcTy->isByteTy()) {
+      return ByteCast;                              // byte -> ptr
     }
-    llvm_unreachable("Casting pointer to other than pointer or int");
+    llvm_unreachable("Casting pointer to other than pointer, int, or byte");
   } else if (DestTy->isX86_MMXTy()) {
     if (SrcTy->isVectorTy()) {
       assert(DestBits == SrcBits && "Casting vector of wrong width to X86_MMX");
@@ -3353,13 +3396,16 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
   switch (op) {
   default: return false; // This is an input error
   case Instruction::Trunc:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize > DstScalarBitSize;
   case Instruction::ZExt:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize < DstScalarBitSize;
   case Instruction::SExt:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize < DstScalarBitSize;
   case Instruction::FPTrunc:
     return SrcTy->isFPOrFPVectorTy() && DstTy->isFPOrFPVectorTy() &&
@@ -3378,7 +3424,8 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
   case Instruction::PtrToInt:
     if (SrcEC != DstEC)
       return false;
-    return SrcTy->isPtrOrPtrVectorTy() && DstTy->isIntOrIntVectorTy();
+    return SrcTy->isPtrOrPtrVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy());
   case Instruction::IntToPtr:
     if (SrcEC != DstEC)
       return false;
@@ -3390,6 +3437,11 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
     // BitCast implies a no-op cast of type only. No bits change.
     // However, you can't cast pointers to anything but pointers.
     if (!SrcPtrTy != !DstPtrTy)
+      return false;
+
+    // Non-pointer byte types cannot be casted to non-byte types.
+    if (!SrcPtrTy && SrcTy->isByteOrByteVectorTy() &&
+        !DstTy->isByteOrByteVectorTy())
       return false;
 
     // For non-pointer cases, the cast is okay if the source and destination bit
@@ -3412,9 +3464,10 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
     return true;
   }
   case Instruction::ByteCast: {
-    // ByteCast is applied to bytes only.
+    // ByteCast is applied to byte -> non-byte only.
     ByteType *SrcByteTy = dyn_cast<ByteType>(SrcTy->getScalarType());
-    if (!SrcByteTy)
+    ByteType *DstByteTy = dyn_cast<ByteType>(DstTy->getScalarType());
+    if (!SrcByteTy || DstByteTy)
       return false;
 
     // If casting a byte to a non-pointer, sizes should match.
@@ -3423,6 +3476,9 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
       return SrcTy->getPrimitiveSizeInBits() == DstTy->getPrimitiveSizeInBits();
 
     return true;
+
+    // Both types must be vectors of the same number of elements or non-vectors.
+    return SrcIsVec == DstIsVec && SrcEC == DstEC;
   }
   case Instruction::AddrSpaceCast: {
     PointerType *SrcPtrTy = dyn_cast<PointerType>(SrcTy->getScalarType());
