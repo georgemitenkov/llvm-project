@@ -1220,6 +1220,17 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
     DstElementType = DstType;
   }
 
+  if (isa<llvm::ByteType>(SrcElementTy)) {
+    assert(DstElementTy->isIntegerTy() &&
+           "Bytes (chars) are converted to integers only");
+    bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
+
+    llvm::Type *MidTy = llvm::Type::getIntNTy(Builder.getContext(),
+                                              SrcElementTy->getByteBitWidth());
+    llvm::Value *IntResult = Builder.CreateByteCast(Src, MidTy, "conv");
+    return Builder.CreateIntCast(IntResult, DstTy, InputSigned, "conv");
+  }
+
   if (isa<llvm::IntegerType>(SrcElementTy)) {
     bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
     if (SrcElementType->isBooleanType() && Opts.TreatBooleanAsSigned) {
@@ -1228,6 +1239,18 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
 
     if (isa<llvm::IntegerType>(DstElementTy))
       return Builder.CreateIntCast(Src, DstTy, InputSigned, "conv");
+
+    if (isa<llvm::ByteType>(DstElementTy)) {
+      llvm::Value *IntResult = Src;
+      if (SrcElementTy->getIntegerBitWidth() !=
+          DstElementTy->getByteBitWidth()) {
+        llvm::Type *MidTy = llvm::Type::getIntNTy(
+            Builder.getContext(), DstElementTy->getByteBitWidth());
+        IntResult = Builder.CreateIntCast(Src, MidTy, InputSigned, "conv");
+      }
+      return Builder.CreateBitCast(IntResult, DstTy, "conv");
+    }
+
     if (InputSigned)
       return Builder.CreateSIToFP(Src, DstTy, "conv");
     return Builder.CreateUIToFP(Src, DstTy, "conv");
