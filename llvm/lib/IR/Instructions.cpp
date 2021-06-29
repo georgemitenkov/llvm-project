@@ -2748,6 +2748,7 @@ unsigned CastInst::isEliminableCastPair(
   // PTRTOINT     n/a      Pointer      n/a        Integral   Unsigned
   // INTTOPTR     n/a      Integral   Unsigned     Pointer      n/a
   // BITCAST       =       FirstClass   n/a       FirstClass    n/a
+  // BYTECAST      =       Byte         n/a       FirstClass    n/a
   // ADDRSPCST    n/a      Pointer      n/a        Pointer      n/a
   //
   // NOTE: some transforms are safe, but we consider them to be non-profitable.
@@ -2760,24 +2761,25 @@ unsigned CastInst::isEliminableCastPair(
   const unsigned numCastOps =
     Instruction::CastOpsEnd - Instruction::CastOpsBegin;
   static const uint8_t CastResults[numCastOps][numCastOps] = {
-    // T        F  F  U  S  F  F  P  I  B  A  -+
-    // R  Z  S  P  P  I  I  T  P  2  N  T  S   |
-    // U  E  E  2  2  2  2  R  E  I  T  C  C   +- secondOp
-    // N  X  X  U  S  F  F  N  X  N  2  V  V   |
-    // C  T  T  I  I  P  P  C  T  T  P  T  T  -+
-    {  1, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0}, // Trunc         -+
-    {  8, 1, 9,99,99, 2,17,99,99,99, 2, 3, 0}, // ZExt           |
-    {  8, 0, 1,99,99, 0, 2,99,99,99, 0, 3, 0}, // SExt           |
-    {  0, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0}, // FPToUI         |
-    {  0, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0}, // FPToSI         |
-    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0}, // UIToFP         +- firstOp
-    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0}, // SIToFP         |
-    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0}, // FPTrunc        |
-    { 99,99,99, 2, 2,99,99, 8, 2,99,99, 4, 0}, // FPExt          |
-    {  1, 0, 0,99,99, 0, 0,99,99,99, 7, 3, 0}, // PtrToInt       |
-    { 99,99,99,99,99,99,99,99,99,11,99,15, 0}, // IntToPtr       |
-    {  5, 5, 5, 6, 6, 5, 5, 6, 6,16, 5, 1,14}, // BitCast        |
-    {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,13,12}, // AddrSpaceCast -+
+    // T        F  F  U  S  F  F  P  I  B  B  A  -+
+    // R  Z  S  P  P  I  I  T  P  2  N  T  Y  S   |
+    // U  E  E  2  2  2  2  R  E  I  T  C  T  C   +- secondOp
+    // N  X  X  U  S  F  F  N  X  N  2  V  C  V   |
+    // C  T  T  I  I  P  P  C  T  T  P  T  T  T  -+
+    {  1, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0, 0}, // Trunc         -+
+    {  8, 1, 9,99,99, 2,17,99,99,99, 2, 3, 0, 0}, // ZExt           |
+    {  8, 0, 1,99,99, 0, 2,99,99,99, 0, 3, 0, 0}, // SExt           |
+    {  0, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0, 0}, // FPToUI         |
+    {  0, 0, 0,99,99, 0, 0,99,99,99, 0, 3, 0, 0}, // FPToSI         |
+    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0, 0}, // UIToFP         +- firstOp
+    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0, 0}, // SIToFP         |
+    { 99,99,99, 0, 0,99,99, 0, 0,99,99, 4, 0, 0}, // FPTrunc        |
+    { 99,99,99, 2, 2,99,99, 8, 2,99,99, 4, 0, 0}, // FPExt          |
+    {  1, 0, 0,99,99, 0, 0,99,99,99, 7, 3, 0, 0}, // PtrToInt       |
+    { 99,99,99,99,99,99,99,99,99,11,99,15, 0, 0}, // IntToPtr       |
+    {  5, 5, 5, 6, 6, 5, 5, 6, 6,16, 5, 1, 0,14}, // BitCast        |
+    {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // ByteCast       |
+    {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,13, 0,12}, // AddrSpaceCast -+
   };
 
   // TODO: This logic could be encoded into the table above and handled in the
