@@ -886,8 +886,15 @@ Value *ScalarExprEmitter::EmitConversionToBool(Value *Src, QualType SrcType) {
   assert((SrcType->isIntegerType() || isa<llvm::PointerType>(Src->getType())) &&
          "Unknown scalar type to convert");
 
-  if (isa<llvm::IntegerType>(Src->getType()))
-    return EmitIntToBoolConversion(Src);
+  if (SrcType->isIntegerType()) {
+    llvm::Value *MaybeByteCasted = Src;
+    if (isa<llvm::ByteType>(Src->getType())) {
+      llvm::Type *MidTy = llvm::Type::getIntNTy(
+          Builder.getContext(), Src->getType()->getByteBitWidth());
+      MaybeByteCasted = Builder.CreateByteCast(Src, MidTy, "conv");
+    }
+    return EmitIntToBoolConversion(MaybeByteCasted);
+  }
 
   assert(isa<llvm::PointerType>(Src->getType()));
   return EmitPointerToBoolConversion(Src, SrcType);

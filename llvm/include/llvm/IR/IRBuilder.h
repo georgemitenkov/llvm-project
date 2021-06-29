@@ -2116,8 +2116,10 @@ public:
                     const Twine &Name = "") {
     if (V->getType() == DestTy)
       return V;
-    if (auto *VC = dyn_cast<Constant>(V))
-      return Insert(Folder.CreateCast(Op, VC, DestTy), Name);
+    if (Op != Instruction::ByteCast) {
+      if (auto *VC = dyn_cast<Constant>(V))
+        return Insert(Folder.CreateCast(Op, VC, DestTy), Name);
+    }
     return Insert(CastInst::Create(Op, V, DestTy), Name);
   }
 
