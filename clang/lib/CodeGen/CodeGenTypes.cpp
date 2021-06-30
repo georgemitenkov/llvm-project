@@ -647,7 +647,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     QualType ETy = PTy->getPointeeType();
     llvm::Type *PointeeType = ConvertTypeForMem(ETy);
     if (PointeeType->isVoidTy())
-      PointeeType = llvm::Type::getInt8Ty(getLLVMContext());
+      PointeeType = llvm::Type::getByte8Ty(getLLVMContext());
 
     unsigned AS = PointeeType->isFunctionTy()
                       ? getDataLayout().getProgramAddressSpace()

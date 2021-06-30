@@ -2080,6 +2080,11 @@ public:
     return CreateCast(Instruction::ByteCast, V, DestTy, Name);
   }
 
+  Value *CreateByteCastToInteger(Value *V, const Twine &Name = "") {
+    Type *DestTy = getIntNTy(V->getType()->getByteBitWidth());
+    return CreateCast(Instruction::ByteCast, V, DestTy, Name);
+  }
+
   Value *CreateAddrSpaceCast(Value *V, Type *DestTy,
                              const Twine &Name = "") {
     return CreateCast(Instruction::AddrSpaceCast, V, DestTy, Name);
@@ -2116,10 +2121,8 @@ public:
                     const Twine &Name = "") {
     if (V->getType() == DestTy)
       return V;
-    if (Op != Instruction::ByteCast) {
-      if (auto *VC = dyn_cast<Constant>(V))
-        return Insert(Folder.CreateCast(Op, VC, DestTy), Name);
-    }
+    if (auto *VC = dyn_cast<Constant>(V))
+      return Insert(Folder.CreateCast(Op, VC, DestTy), Name);
     return Insert(CastInst::Create(Op, V, DestTy), Name);
   }
 

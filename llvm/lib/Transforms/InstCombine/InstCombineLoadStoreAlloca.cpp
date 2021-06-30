@@ -603,7 +603,7 @@ static Instruction *combineLoadToOperationType(InstCombinerImpl &IC,
     }
 
     if (auto* CI = dyn_cast<CastInst>(LI.user_back()))
-      if (CI->isNoopCast(DL) && LI.getType()->isPtrOrPtrVectorTy() ==
+      if (CI->getOpcode() != llvm::Instruction::ByteCast && CI->isNoopCast(DL) && LI.getType()->isPtrOrPtrVectorTy() ==
                                     CI->getDestTy()->isPtrOrPtrVectorTy())
         if (!LI.isAtomic() || isSupportedAtomicType(CI->getDestTy())) {
           LoadInst *NewLoad = IC.combineLoadToNewType(LI, CI->getDestTy());

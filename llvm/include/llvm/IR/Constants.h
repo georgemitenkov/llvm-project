@@ -1014,6 +1014,8 @@ public:
                                bool OnlyIfReduced = false);
   static Constant *getBitCast(Constant *C, Type *Ty,
                               bool OnlyIfReduced = false);
+  static Constant *getByteCast(Constant *C, Type *Ty,
+                               bool OnlyIfReduced = false);
   static Constant *getAddrSpaceCast(Constant *C, Type *Ty,
                                     bool OnlyIfReduced = false);
 

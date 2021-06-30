@@ -345,6 +345,13 @@ bool Constant::containsConstantExpression() const {
 /// Constructor to create a '0' constant of arbitrary type.
 Constant *Constant::getNullValue(Type *Ty) {
   switch (Ty->getTypeID()) {
+  case Type::ByteTyID: {
+    // To construct byte constants, we use non-folded constant cast: bitcast b8
+    // (i8 val to b8)
+    Constant *C = getNullValue(
+        llvm::Type::getIntNTy(Ty->getContext(), Ty->getByteBitWidth()));
+    return ConstantExpr::getBitCast(C, Ty);
+  }
   case Type::IntegerTyID:
     return ConstantInt::get(Ty, 0);
   case Type::HalfTyID:
@@ -394,6 +401,10 @@ Constant *Constant::getIntegerValue(Type *Ty, const APInt &V) {
   if (PointerType *PTy = dyn_cast<PointerType>(ScalarTy))
     C = ConstantExpr::getIntToPtr(C, PTy);
 
+  // Convert an integer to a byte, if necessary.
+  if (ByteType *BTy = dyn_cast<ByteType>(ScalarTy))
+    C = ConstantExpr::getBitCast(C, BTy);
+
   // Broadcast a scalar to a vector, if necessary.
   if (VectorType *VTy = dyn_cast<VectorType>(Ty))
     C = ConstantVector::getSplat(VTy->getElementCount(), C);
@@ -405,6 +416,13 @@ Constant *Constant::getAllOnesValue(Type *Ty) {
   if (IntegerType *ITy = dyn_cast<IntegerType>(Ty))
     return ConstantInt::get(Ty->getContext(),
                             APInt::getAllOnesValue(ITy->getBitWidth()));
+
+  // Byte constants are modelled as casts of appropriate integer constants.
+  if (ByteType *BTy = dyn_cast<ByteType>(Ty)) {
+    Constant *C = ConstantInt::get(BTy->getContext(),
+                                   APInt::getAllOnesValue(BTy->getBitWidth()));
+    return ConstantExpr::getBitCast(C, BTy);
+  }
 
   if (Ty->isFloatingPointTy()) {
     APFloat FL = APFloat::getAllOnesValue(Ty->getFltSemantics(),
@@ -2006,6 +2024,8 @@ Constant *ConstantExpr::getCast(unsigned oc, Constant *C, Type *Ty,
     return getIntToPtr(C, Ty, OnlyIfReduced);
   case Instruction::BitCast:
     return getBitCast(C, Ty, OnlyIfReduced);
+  case Instruction::ByteCast:
+    return getByteCast(C, Ty, OnlyIfReduced);
   case Instruction::AddrSpaceCast:
     return getAddrSpaceCast(C, Ty, OnlyIfReduced);
   }
@@ -2227,6 +2247,13 @@ Constant *ConstantExpr::getBitCast(Constant *C, Type *DstTy,
   if (C->getType() == DstTy) return C;
 
   return getFoldedCast(Instruction::BitCast, C, DstTy, OnlyIfReduced);
+}
+
+Constant *ConstantExpr::getByteCast(Constant *C, Type *DstTy,
+                                    bool OnlyIfReduced) {
+  assert(CastInst::castIsValid(Instruction::ByteCast, C, DstTy) &&
+         "Invalid constantexpr bytecast!");
+  return getFoldedCast(Instruction::ByteCast, C, DstTy, OnlyIfReduced);
 }
 
 Constant *ConstantExpr::getAddrSpaceCast(Constant *C, Type *DstTy,

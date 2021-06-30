@@ -545,6 +545,11 @@ static Constant *getFoldedOffsetOf(Type *Ty, Constant *FieldNo, Type *DestTy,
 
 Constant *llvm::ConstantFoldCastInstruction(unsigned opc, Constant *V,
                                             Type *DestTy) {
+  // Since byte constants do not exist, we cannot fold BitCasts to bytes, as
+  // well as ByteCast instructions. If this is the case, return immediately.
+  if (opc == Instruction::ByteCast || DestTy->isByteOrByteVectorTy())
+    return nullptr;
+
   if (isa<PoisonValue>(V))
     return PoisonValue::get(DestTy);
 
