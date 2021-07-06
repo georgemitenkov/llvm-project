@@ -937,7 +937,11 @@ private:
                                   ArrayRef<Type *> OverloadedTypes,
                                   const Twine &Name = "");
 
+  /// Cast a pointer to i8* if necessary.
   Value *getCastedInt8PtrValue(Value *Ptr);
+
+  /// Cast a pointer to b8* if necessary.
+  Value *getCastedByte8PtrValue(Value *Ptr);
 
   //===--------------------------------------------------------------------===//
   // Instruction creation methods: Terminators

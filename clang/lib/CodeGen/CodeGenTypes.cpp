@@ -436,11 +436,15 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
   case Type::Builtin: {
     switch (cast<BuiltinType>(Ty)->getKind()) {
     case BuiltinType::Void:
+      // LLVM void type can only be used as the result of a function call.  Just
+      // map to the same as char.
+      ResultType = llvm::Type::getByte8Ty(getLLVMContext());
+      break;
+
     case BuiltinType::ObjCId:
     case BuiltinType::ObjCClass:
     case BuiltinType::ObjCSel:
-      // LLVM void type can only be used as the result of a function call.  Just
-      // map to the same as char.
+      // TODO: ideally we want the same conversion as for the void type.
       ResultType = llvm::Type::getInt8Ty(getLLVMContext());
       break;
 

@@ -69,6 +69,15 @@ Value *IRBuilderBase::getCastedInt8PtrValue(Value *Ptr) {
   return CreateBitCast(Ptr, getInt8PtrTy(PT->getAddressSpace()));
 }
 
+Value *IRBuilderBase::getCastedByte8PtrValue(Value *Ptr) {
+  auto *PT = cast<PointerType>(Ptr->getType());
+  if (PT->getElementType()->isByteTy(8))
+    return Ptr;
+
+  // Otherwise, we need to insert a bitcast.
+  return CreateBitCast(Ptr, getByte8PtrTy(PT->getAddressSpace()));
+}
+
 static CallInst *createCallHelper(Function *Callee, ArrayRef<Value *> Ops,
                                   IRBuilderBase *Builder,
                                   const Twine &Name = "",
@@ -114,7 +123,7 @@ CallInst *IRBuilderBase::CreateMemSet(Value *Ptr, Value *Val, Value *Size,
                                       MaybeAlign Align, bool isVolatile,
                                       MDNode *TBAATag, MDNode *ScopeTag,
                                       MDNode *NoAliasTag) {
-  Ptr = getCastedInt8PtrValue(Ptr);
+  Ptr = getCastedByte8PtrValue(Ptr);
   Value *Ops[] = {Ptr, Val, Size, getInt1(isVolatile)};
   Type *Tys[] = { Ptr->getType(), Size->getType() };
   Module *M = BB->getParent()->getParent();
@@ -142,7 +151,7 @@ CallInst *IRBuilderBase::CreateElementUnorderedAtomicMemSet(
     Value *Ptr, Value *Val, Value *Size, Align Alignment, uint32_t ElementSize,
     MDNode *TBAATag, MDNode *ScopeTag, MDNode *NoAliasTag) {
 
-  Ptr = getCastedInt8PtrValue(Ptr);
+  Ptr = getCastedByte8PtrValue(Ptr);
   Value *Ops[] = {Ptr, Val, Size, getInt32(ElementSize)};
   Type *Tys[] = {Ptr->getType(), Size->getType()};
   Module *M = BB->getParent()->getParent();
@@ -170,8 +179,8 @@ CallInst *IRBuilderBase::CreateMemTransferInst(
     Intrinsic::ID IntrID, Value *Dst, MaybeAlign DstAlign, Value *Src,
     MaybeAlign SrcAlign, Value *Size, bool isVolatile, MDNode *TBAATag,
     MDNode *TBAAStructTag, MDNode *ScopeTag, MDNode *NoAliasTag) {
-  Dst = getCastedInt8PtrValue(Dst);
-  Src = getCastedInt8PtrValue(Src);
+  Dst = getCastedByte8PtrValue(Dst);
+  Src = getCastedByte8PtrValue(Src);
 
   Value *Ops[] = {Dst, Src, Size, getInt1(isVolatile)};
   Type *Tys[] = { Dst->getType(), Src->getType(), Size->getType() };
@@ -206,8 +215,8 @@ CallInst *IRBuilderBase::CreateMemTransferInst(
 CallInst *IRBuilderBase::CreateMemCpyInline(Value *Dst, MaybeAlign DstAlign,
                                             Value *Src, MaybeAlign SrcAlign,
                                             Value *Size) {
-  Dst = getCastedInt8PtrValue(Dst);
-  Src = getCastedInt8PtrValue(Src);
+  Dst = getCastedByte8PtrValue(Dst);
+  Src = getCastedByte8PtrValue(Src);
   Value *IsVolatile = getInt1(false);
 
   Value *Ops[] = {Dst, Src, Size, IsVolatile};
@@ -235,8 +244,8 @@ CallInst *IRBuilderBase::CreateElementUnorderedAtomicMemCpy(
          "Pointer alignment must be at least element size");
   assert(SrcAlign >= ElementSize &&
          "Pointer alignment must be at least element size");
-  Dst = getCastedInt8PtrValue(Dst);
-  Src = getCastedInt8PtrValue(Src);
+  Dst = getCastedByte8PtrValue(Dst);
+  Src = getCastedByte8PtrValue(Src);
 
   Value *Ops[] = {Dst, Src, Size, getInt32(ElementSize)};
   Type *Tys[] = {Dst->getType(), Src->getType(), Size->getType()};
@@ -273,8 +282,8 @@ CallInst *IRBuilderBase::CreateMemMove(Value *Dst, MaybeAlign DstAlign,
                                        Value *Size, bool isVolatile,
                                        MDNode *TBAATag, MDNode *ScopeTag,
                                        MDNode *NoAliasTag) {
-  Dst = getCastedInt8PtrValue(Dst);
-  Src = getCastedInt8PtrValue(Src);
+  Dst = getCastedByte8PtrValue(Dst);
+  Src = getCastedByte8PtrValue(Src);
 
   Value *Ops[] = {Dst, Src, Size, getInt1(isVolatile)};
   Type *Tys[] = { Dst->getType(), Src->getType(), Size->getType() };
@@ -310,8 +319,8 @@ CallInst *IRBuilderBase::CreateElementUnorderedAtomicMemMove(
          "Pointer alignment must be at least element size");
   assert(SrcAlign >= ElementSize &&
          "Pointer alignment must be at least element size");
-  Dst = getCastedInt8PtrValue(Dst);
-  Src = getCastedInt8PtrValue(Src);
+  Dst = getCastedByte8PtrValue(Dst);
+  Src = getCastedByte8PtrValue(Src);
 
   Value *Ops[] = {Dst, Src, Size, getInt32(ElementSize)};
   Type *Tys[] = {Dst->getType(), Src->getType(), Size->getType()};
@@ -410,7 +419,7 @@ CallInst *IRBuilderBase::CreateFPMinReduce(Value *Src) {
 CallInst *IRBuilderBase::CreateLifetimeStart(Value *Ptr, ConstantInt *Size) {
   assert(isa<PointerType>(Ptr->getType()) &&
          "lifetime.start only applies to pointers.");
-  Ptr = getCastedInt8PtrValue(Ptr);
+  Ptr = getCastedByte8PtrValue(Ptr);
   if (!Size)
     Size = getInt64(-1);
   else
@@ -426,7 +435,7 @@ CallInst *IRBuilderBase::CreateLifetimeStart(Value *Ptr, ConstantInt *Size) {
 CallInst *IRBuilderBase::CreateLifetimeEnd(Value *Ptr, ConstantInt *Size) {
   assert(isa<PointerType>(Ptr->getType()) &&
          "lifetime.end only applies to pointers.");
-  Ptr = getCastedInt8PtrValue(Ptr);
+  Ptr = getCastedByte8PtrValue(Ptr);
   if (!Size)
     Size = getInt64(-1);
   else

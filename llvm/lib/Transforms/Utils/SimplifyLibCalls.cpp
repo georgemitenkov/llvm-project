@@ -231,7 +231,7 @@ Value *LibCallSimplifier::emitStrLenMemCpy(Value *Src, Value *Dst, uint64_t Len,
   // Now that we have the destination's length, we must index into the
   // destination's pointer to get the actual memcpy destination (end of
   // the string .. we're concatenating).
-  Value *CpyDst = B.CreateGEP(B.getInt8Ty(), Dst, DstLen, "endptr");
+  Value *CpyDst = B.CreateGEP(B.getByte8Ty(), Dst, DstLen, "endptr");
 
   // We have enough information to now generate the memcpy call to do the
   // concatenation for us.  Make a memcpy to copy the nul byte with align = 1.
@@ -313,7 +313,7 @@ Value *LibCallSimplifier::optimizeStrChr(CallInst *CI, IRBuilderBase &B) {
   if (!getConstantStringInfo(SrcStr, Str)) {
     if (CharC->isZero()) // strchr(p, 0) -> p + strlen(p)
       if (Value *StrLen = emitStrLen(SrcStr, B, DL, TLI))
-        return B.CreateGEP(B.getInt8Ty(), SrcStr, StrLen, "strchr");
+        return B.CreateGEP(B.getByte8Ty(), SrcStr, StrLen, "strchr");
     return nullptr;
   }
 
@@ -371,11 +371,13 @@ Value *LibCallSimplifier::optimizeStrCmp(CallInst *CI, IRBuilderBase &B) {
     return ConstantInt::get(CI->getType(), Str1.compare(Str2));
 
   if (HasStr1 && Str1.empty()) // strcmp("", x) -> -*x
-    return B.CreateNeg(B.CreateZExt(
-        B.CreateLoad(B.getInt8Ty(), Str2P, "strcmpload"), CI->getType()));
+    return B.CreateNeg(B.CreateZExt(B.CreateByteCastToInteger(B.CreateLoad(
+                                        B.getByte8Ty(), Str2P, "strcmpload")),
+                                    CI->getType()));
 
   if (HasStr2 && Str2.empty()) // strcmp(x,"") -> *x
-    return B.CreateZExt(B.CreateLoad(B.getInt8Ty(), Str1P, "strcmpload"),
+    return B.CreateZExt(B.CreateByteCastToInteger(
+                            B.CreateLoad(B.getByte8Ty(), Str1P, "strcmpload")),
                         CI->getType());
 
   // strcmp(P, "x") -> memcmp(P, "x", 2)
@@ -446,11 +448,13 @@ Value *LibCallSimplifier::optimizeStrNCmp(CallInst *CI, IRBuilderBase &B) {
   }
 
   if (HasStr1 && Str1.empty()) // strncmp("", x, n) -> -*x
-    return B.CreateNeg(B.CreateZExt(
-        B.CreateLoad(B.getInt8Ty(), Str2P, "strcmpload"), CI->getType()));
+    return B.CreateNeg(B.CreateZExt(B.CreateByteCastToInteger(B.CreateLoad(
+                                        B.getByte8Ty(), Str2P, "strcmpload")),
+                                    CI->getType()));
 
   if (HasStr2 && Str2.empty()) // strncmp(x, "", n) -> *x
-    return B.CreateZExt(B.CreateLoad(B.getInt8Ty(), Str1P, "strcmpload"),
+    return B.CreateZExt(B.CreateByteCastToInteger(
+                            B.CreateLoad(B.getByte8Ty(), Str1P, "strcmpload")),
                         CI->getType());
 
   uint64_t Len1 = GetStringLength(Str1P);
@@ -522,7 +526,7 @@ Value *LibCallSimplifier::optimizeStpCpy(CallInst *CI, IRBuilderBase &B) {
   Value *Dst = CI->getArgOperand(0), *Src = CI->getArgOperand(1);
   if (Dst == Src) { // stpcpy(x,x)  -> x+strlen(x)
     Value *StrLen = emitStrLen(Src, B, DL, TLI);
-    return StrLen ? B.CreateInBoundsGEP(B.getInt8Ty(), Dst, StrLen) : nullptr;
+    return StrLen ? B.CreateInBoundsGEP(B.getByte8Ty(), Dst, StrLen) : nullptr;
   }
 
   // See if we can get the length of the input string.
@@ -534,7 +538,7 @@ Value *LibCallSimplifier::optimizeStpCpy(CallInst *CI, IRBuilderBase &B) {
 
   Type *PT = Callee->getFunctionType()->getParamType(0);
   Value *LenV = ConstantInt::get(DL.getIntPtrType(PT), Len);
-  Value *DstEnd = B.CreateGEP(B.getInt8Ty(), Dst,
+  Value *DstEnd = B.CreateGEP(B.getByte8Ty(), Dst,
                               ConstantInt::get(DL.getIntPtrType(PT), Len - 1));
 
   // We have enough information to now generate the memcpy call to do the
@@ -731,7 +735,7 @@ Value *LibCallSimplifier::optimizeStrPBrk(CallInst *CI, IRBuilderBase &B) {
     if (I == StringRef::npos) // No match.
       return Constant::getNullValue(CI->getType());
 
-    return B.CreateGEP(B.getInt8Ty(), CI->getArgOperand(0), B.getInt64(I),
+    return B.CreateGEP(B.getByte8Ty(), CI->getArgOperand(0), B.getInt64(I),
                        "strpbrk");
   }
 
@@ -2771,7 +2775,7 @@ Value *LibCallSimplifier::optimizeFWrite(CallInst *CI, IRBuilderBase &B) {
     // If this is writing one byte, turn it into fputc.
     // This optimisation is only valid, if the return value is unused.
     if (Bytes == 1 && CI->use_empty()) { // fwrite(S,1,1,F) -> fputc(S[0],F)
-      Value *Char = B.CreateLoad(B.getInt8Ty(),
+      Value *Char = B.CreateLoad(B.getByte8Ty(),
                                  castToCStr(CI->getArgOperand(0), B), "char");
       Value *NewCI = emitFPutC(Char, CI->getArgOperand(3), B, TLI);
       return NewCI ? ConstantInt::get(CI->getType(), 1) : nullptr;

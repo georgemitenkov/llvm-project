@@ -887,10 +887,9 @@ Value *ScalarExprEmitter::EmitConversionToBool(Value *Src, QualType SrcType) {
          "Unknown scalar type to convert");
 
   if (SrcType->isIntegerType()) {
-    llvm::Value *MaybeByteCasted = Src;
     if (isa<llvm::ByteType>(Src->getType()))
-      MaybeByteCasted = Builder.CreateByteCastToInteger(Src, "conv");
-    return EmitIntToBoolConversion(MaybeByteCasted);
+      Src = Builder.CreateByteCastToInteger(Src, "conv");
+    return EmitIntToBoolConversion(Src);
   }
 
   assert(isa<llvm::PointerType>(Src->getType()));
@@ -1226,13 +1225,13 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
 
   if (isa<llvm::ByteType>(SrcElementTy)) {
     bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
-    llvm::Value *IntResult = Builder.CreateByteCastToInteger(Src, "conv");
+    Src = Builder.CreateByteCastToInteger(Src, "conv");
     if (DstTy->isIntegerTy())
-      return Builder.CreateIntCast(IntResult, DstTy, InputSigned, "conv");
+      return Builder.CreateIntCast(Src, DstTy, InputSigned, "conv");
 
     assert(DstTy->isFloatingPointTy());
-    return InputSigned ? Builder.CreateSIToFP(IntResult, DstTy, "conv")
-                       : Builder.CreateUIToFP(IntResult, DstTy, "conv");
+    return InputSigned ? Builder.CreateSIToFP(Src, DstTy, "conv")
+                       : Builder.CreateUIToFP(Src, DstTy, "conv");
   }
 
   if (isa<llvm::IntegerType>(SrcElementTy)) {
@@ -1245,14 +1244,13 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
       return Builder.CreateIntCast(Src, DstTy, InputSigned, "conv");
 
     if (isa<llvm::ByteType>(DstElementTy)) {
-      llvm::Value *IntResult = Src;
       if (SrcElementTy->getIntegerBitWidth() !=
           DstElementTy->getByteBitWidth()) {
         llvm::Type *MidTy = llvm::Type::getIntNTy(
             Builder.getContext(), DstElementTy->getByteBitWidth());
-        IntResult = Builder.CreateIntCast(Src, MidTy, InputSigned, "conv");
+        Src = Builder.CreateIntCast(Src, MidTy, InputSigned, "conv");
       }
-      return Builder.CreateBitCast(IntResult, DstTy, "conv");
+      return Builder.CreateBitCast(Src, DstTy, "conv");
     }
 
     if (InputSigned)

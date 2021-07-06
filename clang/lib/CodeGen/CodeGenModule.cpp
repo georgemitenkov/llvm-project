@@ -108,6 +108,7 @@ CodeGenModule::CodeGenModule(ASTContext &C, const HeaderSearchOptions &HSO,
   // Initialize the type cache.
   llvm::LLVMContext &LLVMContext = M.getContext();
   VoidTy = llvm::Type::getVoidTy(LLVMContext);
+  Byte8Ty = llvm::Type::getByte8Ty(LLVMContext);
   Int8Ty = llvm::Type::getInt8Ty(LLVMContext);
   Int16Ty = llvm::Type::getInt16Ty(LLVMContext);
   Int32Ty = llvm::Type::getInt32Ty(LLVMContext);
@@ -132,6 +133,8 @@ CodeGenModule::CodeGenModule(ASTContext &C, const HeaderSearchOptions &HSO,
   Int8PtrPtrTy = Int8PtrTy->getPointerTo(0);
   AllocaInt8PtrTy = Int8Ty->getPointerTo(
       M.getDataLayout().getAllocaAddrSpace());
+  AllocaByte8PtrTy =
+      Byte8Ty->getPointerTo(M.getDataLayout().getAllocaAddrSpace());
   ASTAllocaAddressSpace = getTargetCodeGenInfo().getASTAllocaAddressSpace();
 
   RuntimeCC = getTargetCodeGenInfo().getABIInfo().getRuntimeCC();

@@ -1332,7 +1332,7 @@ llvm::Value *CodeGenFunction::EmitLifetimeStart(llvm::TypeSize Size,
          "Pointer should be in alloca address space");
   llvm::Value *SizeV = llvm::ConstantInt::get(
       Int64Ty, Size.isScalable() ? -1 : Size.getFixedValue());
-  Addr = Builder.CreateBitCast(Addr, AllocaInt8PtrTy);
+  Addr = Builder.CreateBitCast(Addr, AllocaByte8PtrTy);
   llvm::CallInst *C =
       Builder.CreateCall(CGM.getLLVMLifetimeStartFn(), {SizeV, Addr});
   C->setDoesNotThrow();
@@ -1343,7 +1343,7 @@ void CodeGenFunction::EmitLifetimeEnd(llvm::Value *Size, llvm::Value *Addr) {
   assert(Addr->getType()->getPointerAddressSpace() ==
              CGM.getDataLayout().getAllocaAddrSpace() &&
          "Pointer should be in alloca address space");
-  Addr = Builder.CreateBitCast(Addr, AllocaInt8PtrTy);
+  Addr = Builder.CreateBitCast(Addr, AllocaByte8PtrTy);
   llvm::CallInst *C =
       Builder.CreateCall(CGM.getLLVMLifetimeEndFn(), {Size, Addr});
   C->setDoesNotThrow();
@@ -2387,8 +2387,8 @@ void CodeGenFunction::pushRegularPartialArrayCleanup(llvm::Value *arrayBegin,
 llvm::Function *CodeGenModule::getLLVMLifetimeStartFn() {
   if (LifetimeStartFn)
     return LifetimeStartFn;
-  LifetimeStartFn = llvm::Intrinsic::getDeclaration(&getModule(),
-    llvm::Intrinsic::lifetime_start, AllocaInt8PtrTy);
+  LifetimeStartFn = llvm::Intrinsic::getDeclaration(
+      &getModule(), llvm::Intrinsic::lifetime_start, AllocaByte8PtrTy);
   return LifetimeStartFn;
 }
 
@@ -2396,8 +2396,8 @@ llvm::Function *CodeGenModule::getLLVMLifetimeStartFn() {
 llvm::Function *CodeGenModule::getLLVMLifetimeEndFn() {
   if (LifetimeEndFn)
     return LifetimeEndFn;
-  LifetimeEndFn = llvm::Intrinsic::getDeclaration(&getModule(),
-    llvm::Intrinsic::lifetime_end, AllocaInt8PtrTy);
+  LifetimeEndFn = llvm::Intrinsic::getDeclaration(
+      &getModule(), llvm::Intrinsic::lifetime_end, AllocaByte8PtrTy);
   return LifetimeEndFn;
 }
 
