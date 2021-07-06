@@ -40,7 +40,12 @@ struct CodeGenTypeCache {
   llvm::ByteType *Byte8Ty;
 
   /// b8*
-  llvm::PointerType *AllocaByte8PtrTy;
+  /// TODO: these should replace pointers for allocas, void* and void**
+  union {
+    llvm::PointerType *Byte8PtrTy;
+    llvm::PointerType *AllocaByte8PtrTy;
+  };
+
 
   /// half, bfloat, float, double
   llvm::Type *HalfTy, *BFloatTy, *FloatTy, *DoubleTy;
