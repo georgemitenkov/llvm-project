@@ -2931,7 +2931,8 @@ StringRef ConstantDataSequential::getRawDataValues() const {
 }
 
 bool ConstantDataSequential::isElementTypeCompatible(Type *Ty) {
-  if (Ty->isHalfTy() || Ty->isBFloatTy() || Ty->isFloatTy() || Ty->isDoubleTy() || Ty->isByteTy(8))
+  if (Ty->isHalfTy() || Ty->isBFloatTy() || Ty->isFloatTy() ||
+      Ty->isDoubleTy() || Ty->isByteTy(8))
     return true;
   if (auto *IT = dyn_cast<IntegerType>(Ty)) {
     switch (IT->getBitWidth()) {
@@ -3089,7 +3090,8 @@ Constant *ConstantDataArray::getString(LLVMContext &Context,
   ElementVals.push_back(0);
   size_t Size = ElementVals.size();
   const char *Data = reinterpret_cast<const char *>(ElementVals.data());
-  return getRaw(StringRef(Data, Size * sizeof(uint8_t)), Size, Type::getByte8Ty(Context));
+  return getRaw(StringRef(Data, Size * sizeof(uint8_t)), Size,
+                Type::getByte8Ty(Context));
 }
 
 /// get() constructors - Return a constant with vector type with an element
@@ -3204,8 +3206,9 @@ Constant *ConstantDataVector::getSplat(unsigned NumElts, Constant *V) {
 
 
 uint64_t ConstantDataSequential::getElementAsInteger(unsigned Elt) const {
-  assert((isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
-         "Accessor can only be used when element is an integer or a byte");
+  assert(
+      (isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
+      "Accessor can only be used when element is an integer or a byte");
   const char *EltPtr = getElementPointer(Elt);
 
   // The data is stored in host byte order, make sure to cast back to the right
@@ -3224,8 +3227,9 @@ uint64_t ConstantDataSequential::getElementAsInteger(unsigned Elt) const {
 }
 
 APInt ConstantDataSequential::getElementAsAPInt(unsigned Elt) const {
-  assert((isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
-         "Accessor can only be used when element is an integer or a byte");
+  assert(
+      (isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
+      "Accessor can only be used when element is an integer or a byte");
   const char *EltPtr = getElementPointer(Elt);
 
   // The data is stored in host byte order, make sure to cast back to the right
@@ -3295,7 +3299,8 @@ Constant *ConstantDataSequential::getElementAsConstant(unsigned Elt) const {
 
   // Since there are no byte constants, we need to create a bitcast.
   if (getElementType()->isByteTy()) {
-    Type *IntTy = Type::getIntNTy(getElementType()->getContext(), getElementType()->getByteBitWidth());
+    Type *IntTy = Type::getIntNTy(getElementType()->getContext(),
+                                  getElementType()->getByteBitWidth());
     Constant *C = ConstantInt::get(IntTy, getElementAsInteger(Elt));
     return ConstantExpr::getBitCast(C, getElementType());
   }

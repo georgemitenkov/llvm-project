@@ -46,7 +46,6 @@ struct CodeGenTypeCache {
     llvm::PointerType *AllocaByte8PtrTy;
   };
 
-
   /// half, bfloat, float, double
   llvm::Type *HalfTy, *BFloatTy, *FloatTy, *DoubleTy;
 

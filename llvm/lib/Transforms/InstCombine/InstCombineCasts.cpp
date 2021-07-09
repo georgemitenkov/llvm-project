@@ -2047,10 +2047,12 @@ Instruction *InstCombinerImpl::visitPtrToInt(PtrToIntInst &CI) {
         SrcTy->getWithNewType(DL.getIntPtrType(CI.getContext(), AS));
     Value *P = Builder.CreatePtrToInt(SrcOp, IntPtrTy);
     if (Ty->isByteOrByteVectorTy()) {
-        // If the destination type is a byte (e.g. casting to char), then we need an extra bitcast instruction.
-        Type *ITy = IntegerType::getIntNTy(Ty->getContext(), Ty->getByteBitWidth());
-        P = Builder.CreateZExtOrTrunc(P, ITy);
-        return CastInst::Create(Instruction::BitCast, P, Ty);
+      // If the destination type is a byte (e.g. casting to char), then we need
+      // an extra bitcast instruction.
+      Type *ITy =
+          IntegerType::getIntNTy(Ty->getContext(), Ty->getByteBitWidth());
+      P = Builder.CreateZExtOrTrunc(P, ITy);
+      return CastInst::Create(Instruction::BitCast, P, Ty);
     }
     return CastInst::CreateIntegerCast(P, Ty, /*isSigned=*/false);
   }

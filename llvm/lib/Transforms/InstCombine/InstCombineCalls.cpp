@@ -160,7 +160,7 @@ Instruction *InstCombinerImpl::SimplifyAnyMemTransfer(AnyMemTransferInst *MI) {
   unsigned DstAddrSp =
     cast<PointerType>(MI->getArgOperand(0)->getType())->getAddressSpace();
 
-  ByteType* BTy = ByteType::get(MI->getContext(), Size<<3);
+  ByteType *BTy = ByteType::get(MI->getContext(), Size << 3);
   Type *NewSrcPtrTy = PointerType::get(BTy, SrcAddrSp);
   Type *NewDstPtrTy = PointerType::get(BTy, DstAddrSp);
 
@@ -259,8 +259,8 @@ Instruction *InstCombinerImpl::SimplifyAnyMemSet(AnyMemSetInst *MI) {
 
   // memset(s,c,n) -> store s, c (for n=1,2,4,8)
   if (Len <= 8 && isPowerOf2_32((uint32_t)Len)) {
-    Type *BTy = ByteType::get(MI->getContext(), Len*8);  // n=1 -> b8.
-    Type *ITy = IntegerType::get(MI->getContext(), Len*8);
+    Type *BTy = ByteType::get(MI->getContext(), Len * 8); // n=1 -> b8.
+    Type *ITy = IntegerType::get(MI->getContext(), Len * 8);
 
     Value *Dest = MI->getDest();
     unsigned DstAddrSp = cast<PointerType>(Dest->getType())->getAddressSpace();
