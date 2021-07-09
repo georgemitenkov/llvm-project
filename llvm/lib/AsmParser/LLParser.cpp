@@ -3574,6 +3574,7 @@ bool LLParser::parseValID(ValID &ID, PerFunctionState *PFS) {
   case lltok::kw_fptrunc:
   case lltok::kw_fpext:
   case lltok::kw_bitcast:
+  case lltok::kw_bytecast:
   case lltok::kw_addrspacecast:
   case lltok::kw_uitofp:
   case lltok::kw_sitofp:
