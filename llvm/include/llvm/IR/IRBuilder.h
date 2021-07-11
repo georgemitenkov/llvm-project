@@ -500,8 +500,13 @@ public:
   //===--------------------------------------------------------------------===//
 
   /// Fetch the type representing an 8-bit byte.
-  IntegerType *getByte8Ty() {
+  ByteType *getByte8Ty() {
     return Type::getByte8Ty(Context);
+  }
+
+  /// Fetch the type representing an N-bit byte.
+  ByteType *getByteNTy(unsigned N) {
+    return Type::getByteNTy(Context, N);
   }
 
   /// Fetch the type representing a single bit

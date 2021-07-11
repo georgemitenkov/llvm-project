@@ -625,7 +625,7 @@ Value *LibCallSimplifier::optimizeStringLength(CallInst *CI, IRBuilderBase &B,
   // strlen(s + x) to strlen(s) - x, when x is known to be in the range
   // [0, strlen(s)] or the string has a single null terminator '\0' at the end.
   // We only try to simplify strlen when the pointer s points to an array
-  // of i8. Otherwise, we would need to scale the offset x before doing the
+  // of b8. Otherwise, we would need to scale the offset x before doing the
   // subtraction. This will make the optimization more complex, and it's not
   // very useful because calling strlen for a pointer of other types is
   // very uncommon.
@@ -695,9 +695,10 @@ Value *LibCallSimplifier::optimizeStringLength(CallInst *CI, IRBuilderBase &B,
 
   // strlen(x) != 0 --> *x != 0
   // strlen(x) == 0 --> *x == 0
-  if (isOnlyUsedInZeroEqualityComparison(CI))
-    return B.CreateZExt(B.CreateLoad(B.getIntNTy(CharSize), Src, "strlenfirst"),
-                        CI->getType());
+  if (isOnlyUsedInZeroEqualityComparison(CI)) {
+    Value *Load = B.CreateLoad(B.getByteNTy(CharSize), Src, "strlenfirst");
+    return B.CreateZExt(B.CreateByteCastToInteger(Load), CI->getType());
+  }
 
   return nullptr;
 }

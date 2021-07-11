@@ -4051,10 +4051,9 @@ bool llvm::isGEPBasedOnPointerToString(const GEPOperator *GEP,
   if (GEP->getNumOperands() != 3)
     return false;
 
-  // Make sure the index-ee is a pointer to array of \p CharSize integers.
-  // CharSize.
+  // Make sure the index-ee is a pointer to array of \p CharSize bytes.
   ArrayType *AT = dyn_cast<ArrayType>(GEP->getSourceElementType());
-  if (!AT || !AT->getElementType()->isIntegerTy(CharSize))
+  if (!AT || !AT->getElementType()->isByteTy(CharSize))
     return false;
 
   // Check to make sure that the first operand of the GEP is an integer and
@@ -4127,7 +4126,9 @@ bool llvm::getConstantDataArrayInfo(const Value *V,
       return false;
     ArrayTy = Array->getType();
   }
-  if (!ArrayTy->getElementType()->isIntegerTy(ElementSize))
+
+  // Since char is lowered to a byte type, we check for both integers and bytes.
+  if (!ArrayTy->getElementType()->isIntegerTy(ElementSize) && !ArrayTy->getElementType()->isByteTy(ElementSize))
     return false;
 
   uint64_t NumElts = ArrayTy->getArrayNumElements();
