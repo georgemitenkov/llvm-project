@@ -354,7 +354,7 @@ Value *LibCallSimplifier::optimizeStrRChr(CallInst *CI, IRBuilderBase &B) {
     return Constant::getNullValue(CI->getType());
 
   // strrchr(s+n,c) -> gep(s+n+i,c)
-  return B.CreateGEP(B.getInt8Ty(), SrcStr, B.getInt64(I), "strrchr");
+  return B.CreateGEP(B.getByte8Ty(), SrcStr, B.getInt64(I), "strrchr");
 }
 
 Value *LibCallSimplifier::optimizeStrCmp(CallInst *CI, IRBuilderBase &B) {
