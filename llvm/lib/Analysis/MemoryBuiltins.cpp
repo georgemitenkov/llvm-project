@@ -164,7 +164,7 @@ getAllocationDataForFunction(const Function *Callee, AllocType AllocTy,
   int SndParam = FnData->SndParam;
   FunctionType *FTy = Callee->getFunctionType();
 
-  if (FTy->getReturnType() == Type::getInt8PtrTy(FTy->getContext()) &&
+  if (FTy->getReturnType() == Type::getByte8Ty(FTy->getContext())->getPointerTo() &&
       FTy->getNumParams() == FnData->NumParams &&
       (FstParam < 0 ||
        (FTy->getParamType(FstParam)->isIntegerTy(32) ||
@@ -478,7 +478,7 @@ bool llvm::isLibFreeFunction(const Function *F, const LibFunc TLIFn) {
     return false;
   if (FTy->getNumParams() != ExpectedNumParams)
     return false;
-  if (FTy->getParamType(0) != Type::getInt8PtrTy(F->getContext()))
+  if (FTy->getParamType(0) != Type::getByte8Ty(F->getContext())->getPointerTo())
     return false;
 
   return true;
