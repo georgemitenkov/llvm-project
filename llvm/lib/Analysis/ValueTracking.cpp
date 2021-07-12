@@ -4051,9 +4051,11 @@ bool llvm::isGEPBasedOnPointerToString(const GEPOperator *GEP,
   if (GEP->getNumOperands() != 3)
     return false;
 
-  // Make sure the index-ee is a pointer to array of \p CharSize bytes.
+  // Make sure the index-ee is a pointer to array of \p CharSize bytes. Since char size can be greater than 8 bits, we currently model them as 8-bit bytes or integers of greater bitwidth.
   ArrayType *AT = dyn_cast<ArrayType>(GEP->getSourceElementType());
-  if (!AT || !AT->getElementType()->isByteTy(CharSize))
+  Type* ElTy = AT->getElementType();
+  bool ElTyIsValidByte = ElTy->isByteTy(8) || (CharSize > 8 && ElTy->isIntegerTy(CharSize));
+  if (!AT || !ElTyIsValidByte)
     return false;
 
   // Check to make sure that the first operand of the GEP is an integer and

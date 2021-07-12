@@ -696,6 +696,8 @@ Value *LibCallSimplifier::optimizeStringLength(CallInst *CI, IRBuilderBase &B,
   // strlen(x) != 0 --> *x != 0
   // strlen(x) == 0 --> *x == 0
   if (isOnlyUsedInZeroEqualityComparison(CI)) {
+    if (Src->getType()->getPointerElementType()->isIntegerTy())
+        return B.CreateZExt(B.CreateLoad(B.getIntNTy(CharSize), Src, "strlenfirst"), CI->getType());
     Value *Load = B.CreateLoad(B.getByteNTy(CharSize), Src, "strlenfirst");
     return B.CreateZExt(B.CreateByteCastToInteger(Load), CI->getType());
   }
