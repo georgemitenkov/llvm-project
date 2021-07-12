@@ -953,7 +953,7 @@ Value *LibCallSimplifier::optimizeMemChr(CallInst *CI, IRBuilderBase &B) {
     return Constant::getNullValue(CI->getType());
 
   // memchr(s+n,c,l) -> gep(s+n+i,c)
-  return B.CreateGEP(B.getInt8Ty(), SrcStr, B.getInt64(I), "memchr");
+  return B.CreateGEP(B.getByte8Ty(), SrcStr, B.getInt64(I), "memchr");
 }
 
 static Value *optimizeMemCmpConstantSize(CallInst *CI, Value *LHS, Value *RHS,
