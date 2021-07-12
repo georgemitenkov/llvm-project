@@ -10,11 +10,11 @@ target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f3
 
 define void @test_no_simplify() {
 ; CHECK-LABEL: @test_no_simplify(
-  %dst = bitcast %struct.T* @t to i8*
+  %dst = bitcast %struct.T* @t to b8*
 
-; CHECK-NEXT: call i8* @__memset_chk
-  call i8* @__memset_chk(i8* %dst, i32 0, i64 1824)
+; CHECK-NEXT: call b8* @__memset_chk
+  call b8* @__memset_chk(b8* %dst, i32 0, i64 1824)
   ret void
 }
 
-declare i8* @__memset_chk(i8*, i32, i64)
+declare b8* @__memset_chk(b8*, i32, i64)
