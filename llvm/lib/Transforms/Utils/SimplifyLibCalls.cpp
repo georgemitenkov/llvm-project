@@ -1128,7 +1128,7 @@ Value *LibCallSimplifier::optimizeMemCCpy(CallInst *CI, IRBuilderBase &B) {
   // memccpy -> llvm.memcpy
   B.CreateMemCpy(Dst, Align(1), Src, Align(1), NewN);
   return Pos + 1 <= N->getZExtValue()
-             ? B.CreateInBoundsGEP(B.getInt8Ty(), Dst, NewN)
+             ? B.CreateInBoundsGEP(B.getByte8Ty(), Dst, NewN)
              : Constant::getNullValue(CI->getType());
 }
 
@@ -1144,7 +1144,7 @@ Value *LibCallSimplifier::optimizeMemPCpy(CallInst *CI, IRBuilderBase &B) {
   NewCI->setAttributes(CI->getAttributes());
   NewCI->removeAttributes(AttributeList::ReturnIndex,
                           AttributeFuncs::typeIncompatible(NewCI->getType()));
-  return B.CreateInBoundsGEP(B.getInt8Ty(), Dst, N);
+  return B.CreateInBoundsGEP(B.getByte8Ty(), Dst, N);
 }
 
 Value *LibCallSimplifier::optimizeMemMove(CallInst *CI, IRBuilderBase &B) {

@@ -2,55 +2,55 @@
 ; RUN: opt -S < %s -mtriple=msp430 -instcombine -instcombine-infinite-loop-threshold=2 | FileCheck -check-prefixes=CHECK,CHECK16 %s
 target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-f80:128:128-v64:64:64-v128:128:128-a0:0:64-f80:32:32-n8:16:32-S32"
 
-@G = constant [3 x i8] c"%s\00"		; <[3 x i8]*> [#uses=1]
+@G = constant [3 x b8] c"%s\00"		; <[3 x b8]*> [#uses=1]
 
-declare i32 @sprintf(i8*, i8*, ...)
+declare i32 @sprintf(b8*, b8*, ...)
 
-define void @foo(i8* %P, i32* %X) {
-	call i32 (i8*, i8*, ...) @sprintf( i8* %P, i8* getelementptr ([3 x i8], [3 x i8]* @G, i32 0, i32 0), i32* %X )		; <i32>:1 [#uses=0]
+define void @foo(b8* %P, i32* %X) {
+	call i32 (b8*, b8*, ...) @sprintf( b8* %P, b8* getelementptr ([3 x b8], [3 x b8]* @G, i32 0, i32 0), i32* %X )		; <i32>:1 [#uses=0]
 	ret void
 }
 
 ; PR1307
-@str = internal constant [5 x i8] c"foog\00"
-@str1 = internal constant [8 x i8] c"blahhh!\00"
-@str2 = internal constant [5 x i8] c"Ponk\00"
+@str = internal constant [5 x b8] c"foog\00"
+@str1 = internal constant [8 x b8] c"blahhh!\00"
+@str2 = internal constant [5 x b8] c"Ponk\00"
 
-define i8* @test1() {
-        %tmp3 = tail call i8* @strchr( i8* getelementptr ([5 x i8], [5 x i8]* @str, i32 0, i32 2), i32 103 )              ; <i8*> [#uses=1]
-        ret i8* %tmp3
+define b8* @test1() {
+        %tmp3 = tail call b8* @strchr( b8* getelementptr ([5 x b8], [5 x b8]* @str, i32 0, i32 2), i32 103 )              ; <b8*> [#uses=1]
+        ret b8* %tmp3
 
 ; CHECK-LABEL: @test1(
-; CHECK: ret i8* getelementptr inbounds ([5 x i8], [5 x i8]* @str, i32 0, i32 3)
+; CHECK: ret b8* getelementptr inbounds ([5 x b8], [5 x b8]* @str, i32 0, i32 3)
 }
 
-declare i8* @strchr(i8*, i32)
+declare b8* @strchr(b8*, i32)
 
-define i8* @test2() {
-        %tmp3 = tail call i8* @strchr( i8* getelementptr ([8 x i8], [8 x i8]* @str1, i32 0, i32 2), i32 0 )               ; <i8*> [#uses=1]
-        ret i8* %tmp3
+define b8* @test2() {
+        %tmp3 = tail call b8* @strchr( b8* getelementptr ([8 x b8], [8 x b8]* @str1, i32 0, i32 2), i32 0 )               ; <b8*> [#uses=1]
+        ret b8* %tmp3
 
 ; CHECK-LABEL: @test2(
-; CHECK: ret i8* getelementptr inbounds ([8 x i8], [8 x i8]* @str1, i32 0, i32 7)
+; CHECK: ret b8* getelementptr inbounds ([8 x b8], [8 x b8]* @str1, i32 0, i32 7)
 }
 
-define i8* @test3() {
+define b8* @test3() {
 entry:
-        %tmp3 = tail call i8* @strchr( i8* getelementptr ([5 x i8], [5 x i8]* @str2, i32 0, i32 1), i32 80 )              ; <i8*> [#uses=1]
-        ret i8* %tmp3
+        %tmp3 = tail call b8* @strchr( b8* getelementptr ([5 x b8], [5 x b8]* @str2, i32 0, i32 1), i32 80 )              ; <b8*> [#uses=1]
+        ret b8* %tmp3
 
 ; CHECK-LABEL: @test3(
-; CHECK: ret i8* null
+; CHECK: ret b8* null
 }
 
-@_2E_str = external constant [5 x i8]		; <[5 x i8]*> [#uses=1]
+@_2E_str = external constant [5 x b8]		; <[5 x b8]*> [#uses=1]
 
-declare i32 @memcmp(i8*, i8*, i32) nounwind readonly
+declare i32 @memcmp(b8*, b8*, i32) nounwind readonly
 
-define i1 @PR2341(i8** %start_addr) {
+define i1 @PR2341(b8** %start_addr) {
 entry:
-	%tmp4 = load i8*, i8** %start_addr, align 4		; <i8*> [#uses=1]
-	%tmp5 = call i32 @memcmp( i8* %tmp4, i8* getelementptr ([5 x i8], [5 x i8]* @_2E_str, i32 0, i32 0), i32 4 ) nounwind readonly 		; <i32> [#uses=1]
+	%tmp4 = load b8*, b8** %start_addr, align 4		; <b8*> [#uses=1]
+	%tmp5 = call i32 @memcmp( b8* %tmp4, b8* getelementptr ([5 x b8], [5 x b8]* @_2E_str, i32 0, i32 0), i32 4 ) nounwind readonly 		; <i32> [#uses=1]
 	%tmp6 = icmp eq i32 %tmp5, 0		; <i1> [#uses=1]
 	ret i1 %tmp6
 
@@ -60,34 +60,34 @@ entry:
 
 define i32 @PR4284() nounwind {
 entry:
-	%c0 = alloca i8, align 1		; <i8*> [#uses=2]
-	%c2 = alloca i8, align 1		; <i8*> [#uses=2]
-	store i8 64, i8* %c0
-	store i8 -127, i8* %c2
-	%call = call i32 @memcmp(i8* %c0, i8* %c2, i32 1)		; <i32> [#uses=1]
+	%c0 = alloca b8, align 1		; <b8*> [#uses=2]
+	%c2 = alloca b8, align 1		; <b8*> [#uses=2]
+	store b8 bitcast (i8 64 to b8), b8* %c0
+	store b8 bitcast (i8 -127 to b8), b8* %c2
+	%call = call i32 @memcmp(b8* %c0, b8* %c2, i32 1)		; <i32> [#uses=1]
 	ret i32 %call
 
 ; CHECK-LABEL: @PR4284(
 ; CHECK: ret i32 -65
 }
 
-%struct.__sFILE = type { i8*, i32, i32, i16, i16, %struct.__sbuf, i32, i8*, i32 (i8*)*, i32 (i8*, i8*, i32)*, i64 (i8*, i64, i32)*, i32 (i8*, i8*, i32)*, %struct.__sbuf, i8*, i32, [3 x i8], [1 x i8], %struct.__sbuf, i32, i64, %struct.pthread_mutex*, %struct.pthread*, i32, i32, %union.anon }
-%struct.__sbuf = type { i8*, i32, [4 x i8] }
+%struct.__sFILE = type { b8*, i32, i32, i16, i16, %struct.__sbuf, i32, b8*, i32 (b8*)*, i32 (b8*, b8*, i32)*, i64 (b8*, i64, i32)*, i32 (b8*, b8*, i32)*, %struct.__sbuf, b8*, i32, [3 x b8], [1 x b8], %struct.__sbuf, i32, i64, %struct.pthread_mutex*, %struct.pthread*, i32, i32, %union.anon }
+%struct.__sbuf = type { b8*, i32, [4 x b8] }
 %struct.pthread = type opaque
 %struct.pthread_mutex = type opaque
-%union.anon = type { i64, [120 x i8] }
-@.str13 = external constant [2 x i8]		; <[2 x i8]*> [#uses=1]
-@.str14 = external constant [2 x i8]		; <[2 x i8]*> [#uses=1]
+%union.anon = type { i64, [120 x b8] }
+@.str13 = external constant [2 x b8]		; <[2 x b8]*> [#uses=1]
+@.str14 = external constant [2 x b8]		; <[2 x b8]*> [#uses=1]
 
-define i32 @PR4641(i32 %argc, i8** %argv) nounwind {
+define i32 @PR4641(i32 %argc, b8** %argv) nounwind {
 entry:
 	call void @exit(i32 0) nounwind
-	%cond392 = select i1 undef, i8* getelementptr ([2 x i8], [2 x i8]* @.str13, i32 0, i32 0), i8* getelementptr ([2 x i8], [2 x i8]* @.str14, i32 0, i32 0)		; <i8*> [#uses=1]
-	%call393 = call %struct.__sFILE* @fopen(i8* undef, i8* %cond392) nounwind		; <%struct.__sFILE*> [#uses=0]
+	%cond392 = select i1 undef, b8* getelementptr ([2 x b8], [2 x b8]* @.str13, i32 0, i32 0), b8* getelementptr ([2 x b8], [2 x b8]* @.str14, i32 0, i32 0)		; <b8*> [#uses=1]
+	%call393 = call %struct.__sFILE* @fopen(b8* undef, b8* %cond392) nounwind		; <%struct.__sFILE*> [#uses=0]
 	unreachable
 }
 
-declare %struct.__sFILE* @fopen(i8*, i8*)
+declare %struct.__sFILE* @fopen(b8*, b8*)
 
 declare void @exit(i32)
 
@@ -111,19 +111,19 @@ for.end:		; preds = %for.cond20
 	br label %for.cond
 }
 
-@h = constant [2 x i8] c"h\00"		; <[2 x i8]*> [#uses=1]
-@hel = constant [4 x i8] c"hel\00"		; <[4 x i8]*> [#uses=1]
-@hello_u = constant [8 x i8] c"hello_u\00"		; <[8 x i8]*> [#uses=1]
+@h = constant [2 x b8] c"h\00"		; <[2 x b8]*> [#uses=1]
+@hel = constant [4 x b8] c"hel\00"		; <[4 x b8]*> [#uses=1]
+@hello_u = constant [8 x b8] c"hello_u\00"		; <[8 x b8]*> [#uses=1]
 
 define i32 @MemCpy() {
-  %h_p = getelementptr [2 x i8], [2 x i8]* @h, i32 0, i32 0
-  %hel_p = getelementptr [4 x i8], [4 x i8]* @hel, i32 0, i32 0
-  %hello_u_p = getelementptr [8 x i8], [8 x i8]* @hello_u, i32 0, i32 0
-  %target = alloca [1024 x i8]
-  %target_p = getelementptr [1024 x i8], [1024 x i8]* %target, i32 0, i32 0
-  call void @llvm.memcpy.p0i8.p0i8.i32(i8* align 2 %target_p, i8* align 2 %h_p, i32 2, i1 false)
-  call void @llvm.memcpy.p0i8.p0i8.i32(i8* align 4 %target_p, i8* align 4 %hel_p, i32 4, i1 false)
-  call void @llvm.memcpy.p0i8.p0i8.i32(i8* align 8 %target_p, i8* align 8 %hello_u_p, i32 8, i1 false)
+  %h_p = getelementptr [2 x b8], [2 x b8]* @h, i32 0, i32 0
+  %hel_p = getelementptr [4 x b8], [4 x b8]* @hel, i32 0, i32 0
+  %hello_u_p = getelementptr [8 x b8], [8 x b8]* @hello_u, i32 0, i32 0
+  %target = alloca [1024 x b8]
+  %target_p = getelementptr [1024 x b8], [1024 x b8]* %target, i32 0, i32 0
+  call void @llvm.memcpy.p0b8.p0b8.i32(b8* align 2 %target_p, b8* align 2 %h_p, i32 2, i1 false)
+  call void @llvm.memcpy.p0b8.p0b8.i32(b8* align 4 %target_p, b8* align 4 %hel_p, i32 4, i1 false)
+  call void @llvm.memcpy.p0b8.p0b8.i32(b8* align 8 %target_p, b8* align 8 %hello_u_p, i32 8, i1 false)
   ret i32 0
 
 ; CHECK-LABEL: @MemCpy(
@@ -131,14 +131,14 @@ define i32 @MemCpy() {
 ; CHECK: ret i32 0
 }
 
-declare void @llvm.memcpy.p0i8.p0i8.i32(i8* nocapture, i8* nocapture, i32, i1) nounwind
+declare void @llvm.memcpy.p0b8.p0b8.i32(b8* nocapture, b8* nocapture, i32, i1) nounwind
 
-declare i32 @strcmp(i8*, i8*) #0
+declare i32 @strcmp(b8*, b8*) #0
 
-define void @test9(i8* %x) {
+define void @test9(b8* %x) {
 ; CHECK-LABEL: @test9(
 ; CHECK-NOT: strcmp
-  %y = call i32 @strcmp(i8* %x, i8* %x) #1
+  %y = call i32 @strcmp(b8* %x, b8* %x) #1
   ret void
 }
 
