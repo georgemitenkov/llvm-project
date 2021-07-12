@@ -2496,14 +2496,20 @@ Value *LibCallSimplifier::optimizeSPrintFString(CallInst *CI,
 
   // Decode the second character of the format string.
   if (FormatStr[1] == 'c') {
-    // sprintf(dst, "%c", chr) --> *(i8*)dst = chr; *((i8*)dst+1) = 0
-    if (!CI->getArgOperand(2)->getType()->isIntegerTy())
+    // sprintf(dst, "%c", chr) --> *(b8*)dst = chr; *((b8*)dst+1) = 0
+    Type *ChrType = CI->getArgOperand(2)->getType();
+    if (!ChrType->isByteTy(8) && !ChrType->isIntegerTy())
       return nullptr;
-    Value *V = B.CreateTrunc(CI->getArgOperand(2), B.getInt8Ty(), "char");
+    
+    // If the passed value is an integer, we need to truncate it to i8 and cast to b8.
+    Value *V = CI->getArgOperand(2);
+    if (ChrType->isIntegerTy())
+      V = B.CreateBitCast(B.CreateTrunc(CI->getArgOperand(2), B.getInt8Ty()), B.getByte8Ty(), "char");
+
     Value *Ptr = castToCStr(CI->getArgOperand(0), B);
     B.CreateStore(V, Ptr);
-    Ptr = B.CreateGEP(B.getInt8Ty(), Ptr, B.getInt32(1), "nul");
-    B.CreateStore(B.getInt8(0), Ptr);
+    Ptr = B.CreateGEP(B.getByte8Ty(), Ptr, B.getInt32(1), "nul");
+    B.CreateStore(Constant::getNullValue(B.getByte8Ty()), Ptr);
 
     return ConstantInt::get(CI->getType(), 1);
   }
