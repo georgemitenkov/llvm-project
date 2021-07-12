@@ -10,12 +10,12 @@ define i32 @assume_inevitable(i32* %a, i32* %b, i8* %c) {
 ; CHECK-NEXT:    [[M:%.*]] = alloca i64, align 8
 ; CHECK-NEXT:    [[TMP0:%.*]] = load i32, i32* [[A:%.*]], align 32
 ; CHECK-NEXT:    [[LOADRES:%.*]] = load i32, i32* [[B:%.*]], align 4
-; CHECK-NEXT:    [[LOADRES2:%.*]] = call i32 @llvm.annotation.i32(i32 [[LOADRES]], i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str1, i64 0, i64 0), i32 2)
+; CHECK-NEXT:    [[LOADRES2:%.*]] = call i32 @llvm.annotation.i32(i32 [[LOADRES]], i8* bitcast ([4 x b8]* @.str to i8*), i8* bitcast ([4 x b8]* @.str1 to i8*), i32 2)
 ; CHECK-NEXT:    store i32 [[LOADRES2]], i32* [[A]], align 32
 ; CHECK-NEXT:    [[DUMMY_EQ:%.*]] = icmp ugt i32 [[LOADRES]], 42
 ; CHECK-NEXT:    tail call void @llvm.assume(i1 [[DUMMY_EQ]])
 ; CHECK-NEXT:    [[M_I8:%.*]] = bitcast i64* [[M]] to i8*
-; CHECK-NEXT:    [[M_A:%.*]] = call i8* @llvm.ptr.annotation.p0i8(i8* nonnull [[M_I8]], i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i64 0, i64 0), i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str1, i64 0, i64 0), i32 2, i8* null)
+; CHECK-NEXT:    [[M_A:%.*]] = call i8* @llvm.ptr.annotation.p0i8(i8* nonnull [[M_I8]], i8* bitcast ([4 x b8]* @.str to i8*), i8* bitcast ([4 x b8]* @.str1 to i8*), i32 2, i8* null)
 ; CHECK-NEXT:    [[M_X:%.*]] = bitcast i8* [[M_A]] to i64*
 ; CHECK-NEXT:    [[OBJSZ:%.*]] = call i64 @llvm.objectsize.i64.p0i8(i8* [[C:%.*]], i1 false, i1 false, i1 false)
 ; CHECK-NEXT:    store i64 [[OBJSZ]], i64* [[M_X]], align 4
@@ -32,7 +32,7 @@ entry:
 
   ; START perform a bunch of inevitable operations
   %loadres = load i32, i32* %b
-  %loadres2 = call i32 @llvm.annotation.i32(i32 %loadres, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str1, i32 0, i32 0), i32 2)
+  %loadres2 = call i32 @llvm.annotation.i32(i32 %loadres, i8* bitcast ([4 x b8]* @.str to i8*), i8* bitcast ([4 x b8]* @.str1 to i8*), i32 2)
   store i32 %loadres2, i32* %a
 
   %dummy_eq = icmp ugt i32 %loadres, 42
@@ -44,7 +44,7 @@ entry:
   call void @llvm.lifetime.end.p0i8(i64 1, i8* %dummy)
 
   %m_i8 = bitcast i64* %m to i8*
-  %m_a = call i8* @llvm.ptr.annotation.p0i8(i8* %m_i8, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str1, i32 0, i32 0), i32 2, i8* null)
+  %m_a = call i8* @llvm.ptr.annotation.p0i8(i8* %m_i8, i8* bitcast ([4 x b8]* @.str to i8*), i8* bitcast ([4 x b8]* @.str1 to i8*), i32 2, i8* null)
   %m_x = bitcast i8* %m_a to i64*
   %objsz = call i64 @llvm.objectsize.i64.p0i8(i8* %c, i1 false)
   store i64 %objsz, i64* %m_x
@@ -59,8 +59,8 @@ entry:
   ret i32 %0
 }
 
-@.str = private unnamed_addr constant [4 x i8] c"sth\00", section "llvm.metadata"
-@.str1 = private unnamed_addr constant [4 x i8] c"t.c\00", section "llvm.metadata"
+@.str = private unnamed_addr constant [4 x b8] c"sth\00", section "llvm.metadata"
+@.str1 = private unnamed_addr constant [4 x b8] c"t.c\00", section "llvm.metadata"
 
 declare i64 @llvm.objectsize.i64.p0i8(i8*, i1)
 declare i32 @llvm.annotation.i32(i32, i8*, i8*, i32)

@@ -6,8 +6,8 @@ target datalayout = "E-p:64:64:64-a0:0:8-f32:32:32-f64:64:64-i1:8:8-i8:8:8-i16:1
 	%struct.objc_class = type opaque
  	%struct.objc_selector = type opaque
 
-@"\01L_OBJC_METH_VAR_NAME_112" = internal global [15 x i8] c"whiteComponent\00", section "__TEXT,__cstring,cstring_literals"
-@"\01L_OBJC_SELECTOR_REFERENCES_81" = internal global %struct.objc_selector* bitcast ([15 x i8]* @"\01L_OBJC_METH_VAR_NAME_112" to %struct.objc_selector*), section "__OBJC,__message_refs,literal_pointers,no_dead_strip"
+@"\01L_OBJC_METH_VAR_NAME_112" = internal global [15 x b8] c"whiteComponent\00", section "__TEXT,__cstring,cstring_literals"
+@"\01L_OBJC_SELECTOR_REFERENCES_81" = internal global %struct.objc_selector* bitcast ([15 x b8]* @"\01L_OBJC_METH_VAR_NAME_112" to %struct.objc_selector*), section "__OBJC,__message_refs,literal_pointers,no_dead_strip"
 
 define void @bork() nounwind  {
 entry:

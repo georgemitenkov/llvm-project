@@ -19,7 +19,7 @@
 target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-@.str = private unnamed_addr constant [5 x i8] c"\0A %d\00", align 1
+@.str = private unnamed_addr constant [5 x b8] c"\0A %d\00", align 1
 
 define i32 @foo1(i32 %N) {
 entry:
@@ -50,9 +50,9 @@ define void @foo() {
 entry:
   %call = tail call i32 @foo1(i32 0)
   %conv = sext i32 %call to i64
-  %call1 = tail call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str, i64 0, i64 0), i64 %conv)
+  %call1 = tail call i32 (b8*, ...) @printf(b8* getelementptr inbounds ([5 x b8], [5 x b8]* @.str, i64 0, i64 0), i64 %conv)
   ret void
 }
 
-declare i32 @printf(i8* nocapture readonly, ...)
+declare i32 @printf(b8* nocapture readonly, ...)
 

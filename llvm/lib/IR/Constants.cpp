@@ -76,6 +76,13 @@ bool Constant::isNullValue() const {
   if (const ConstantInt *CI = dyn_cast<ConstantInt>(this))
     return CI->isZero();
 
+  // Byte constants are bitcasts of integer constants.
+  if (const ConstantExpr *CE = dyn_cast<ConstantExpr>(this)) {
+    if (CE->getOpcode() == Instruction::BitCast && CE->getType()->isByteTy() &&
+        isa<ConstantInt>(CE->getOperand(0)))
+      return cast<ConstantInt>(CE->getOperand(0))->isZero();
+  }
+
   // +0.0 is null.
   if (const ConstantFP *CFP = dyn_cast<ConstantFP>(this))
     // ppc_fp128 determine isZero using high order double only

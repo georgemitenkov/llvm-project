@@ -1,7 +1,7 @@
 ; RUN: opt < %s -instcombine -S | FileCheck %s
 
-@.str = internal constant [5 x i8] c"foo\0A\00"
-@.str1 = internal constant [5 x i8] c"bar\0A\00"
+@.str = internal constant [5 x b8] c"foo\0A\00"
+@.str1 = internal constant [5 x b8] c"bar\0A\00"
 
 define i32 @main() nounwind  {
 entry:
@@ -22,8 +22,8 @@ bb14:
   br label %bb15
 
 bb15:
-  %iftmp.0.0 = phi i8* [ getelementptr ([5 x i8], [5 x i8]* @.str1, i32 0, i32 0), %bb14 ], [ getelementptr ([5 x i8], [5 x i8]* @.str, i32 0, i32 0), %bb ]
-  %tmp17 = call i32 (i8*, ...) @printf(i8* %iftmp.0.0) nounwind
+  %iftmp.0.0 = phi b8* [ getelementptr ([5 x b8], [5 x b8]* @.str1, i32 0, i32 0), %bb14 ], [ getelementptr ([5 x b8], [5 x b8]* @.str, i32 0, i32 0), %bb ]
+  %tmp17 = call i32 (b8*, ...) @printf(b8* %iftmp.0.0) nounwind
   ret i32 0
 }
 
@@ -33,4 +33,4 @@ bb15:
 
 declare i32 @func_11()
 
-declare i32 @printf(i8*, ...) nounwind
+declare i32 @printf(b8*, ...) nounwind

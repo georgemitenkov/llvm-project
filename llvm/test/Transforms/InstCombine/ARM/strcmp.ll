@@ -4,12 +4,12 @@
 
 target datalayout = "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64"
 
-@hello = constant [6 x i8] c"hello\00"
-@hell = constant [5 x i8] c"hell\00"
-@bell = constant [5 x i8] c"bell\00"
+@hello = constant [6 x b8] c"hello\00"
+@hell = constant [5 x b8] c"hell\00"
+@bell = constant [5 x b8] c"bell\00"
 @null = constant [1 x i8] zeroinitializer
 
-declare i32 @strcmp(i8*, i8*)
+declare i32 @strcmp(b8*, b8*)
 
 ; strcmp("", x) -> -*x
 define arm_aapcscc i32 @test1(i8* %str2) {
@@ -21,7 +21,7 @@ define arm_aapcscc i32 @test1(i8* %str2) {
 ;
 
   %str1 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_apcscc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_apcscc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 
 }
@@ -35,7 +35,7 @@ define arm_aapcscc i32 @test2(i8* %str1) {
 ;
 
   %str2 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_aapcscc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_aapcscc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -45,9 +45,9 @@ define arm_aapcscc i32 @test3() {
 ; CHECK-NEXT:    ret i32 -1
 ;
 
-  %str1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
-  %str2 = getelementptr inbounds [6 x i8], [6 x i8]* @hello, i32 0, i32 0
-  %temp1 = call arm_aapcscc i32 @strcmp(i8* %str1, i8* %str2)
+  %str1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
+  %str2 = getelementptr inbounds [6 x b8], [6 x b8]* @hello, i32 0, i32 0
+  %temp1 = call arm_aapcscc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -56,9 +56,9 @@ define arm_aapcscc i32 @test4() {
 ; CHECK-NEXT:    ret i32 1
 ;
 
-  %str1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
+  %str1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
   %str2 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_aapcscc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_aapcscc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -66,16 +66,16 @@ define arm_aapcscc i32 @test4() {
 ; (This transform is rather difficult to trigger in a useful manner)
 define arm_aapcscc i32 @test5(i1 %b) {
 ; CHECK-LABEL: @test5(
-; CHECK-NEXT:    [[STR2:%.*]] = select i1 [[B:%.*]], i8* getelementptr inbounds ([5 x i8], [5 x i8]* @hell, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @bell, i32 0, i32 0)
+; CHECK-NEXT:    [[STR2:%.*]] = select i1 [[B:%.*]], b8* getelementptr inbounds ([5 x b8], [5 x b8]* @hell, i32 0, i32 0), b8* getelementptr inbounds ([5 x b8], [5 x b8]* @bell, i32 0, i32 0)
 ; CHECK-NEXT:    [[MEMCMP:%.*]] = call i32 @memcmp(i8* noundef nonnull dereferenceable(5) getelementptr inbounds ([6 x i8], [6 x i8]* @hello, i32 0, i32 0), i8* noundef nonnull dereferenceable(5) [[STR2]], i32 5)
 ; CHECK-NEXT:    ret i32 [[MEMCMP]]
 ;
 
-  %str1 = getelementptr inbounds [6 x i8], [6 x i8]* @hello, i32 0, i32 0
-  %temp1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
-  %temp2 = getelementptr inbounds [5 x i8], [5 x i8]* @bell, i32 0, i32 0
+  %str1 = getelementptr inbounds [6 x b8], [6 x b8]* @hello, i32 0, i32 0
+  %temp1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
+  %temp2 = getelementptr inbounds [5 x b8], [5 x b8]* @bell, i32 0, i32 0
   %str2 = select i1 %b, i8* %temp1, i8* %temp2
-  %temp3 = call arm_aapcscc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp3 = call arm_aapcscc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp3
 }
 
@@ -85,7 +85,7 @@ define arm_aapcscc i32 @test6(i8* %str) {
 ; CHECK-NEXT:    ret i32 0
 ;
 
-  %temp1 = call arm_aapcscc i32 @strcmp(i8* %str, i8* %str)
+  %temp1 = call arm_aapcscc i32 @strcmp(b8* %str, b8* %str)
   ret i32 %temp1
 }
 
@@ -99,7 +99,7 @@ define arm_aapcs_vfpcc i32 @test1_vfp(i8* %str2) {
 ;
 
   %str1 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 
 }
@@ -113,7 +113,7 @@ define arm_aapcs_vfpcc i32 @test2_vfp(i8* %str1) {
 ;
 
   %str2 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -123,9 +123,9 @@ define arm_aapcs_vfpcc i32 @test3_vfp() {
 ; CHECK-NEXT:    ret i32 -1
 ;
 
-  %str1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
-  %str2 = getelementptr inbounds [6 x i8], [6 x i8]* @hello, i32 0, i32 0
-  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str1, i8* %str2)
+  %str1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
+  %str2 = getelementptr inbounds [6 x b8], [6 x b8]* @hello, i32 0, i32 0
+  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -134,9 +134,9 @@ define arm_aapcs_vfpcc i32 @test4_vfp() {
 ; CHECK-NEXT:    ret i32 1
 ;
 
-  %str1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
+  %str1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
   %str2 = getelementptr inbounds [1 x i8], [1 x i8]* @null, i32 0, i32 0
-  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp1
 }
 
@@ -144,16 +144,16 @@ define arm_aapcs_vfpcc i32 @test4_vfp() {
 ; (This transform is rather difficult to trigger in a useful manner)
 define arm_aapcs_vfpcc i32 @test5_vfp(i1 %b) {
 ; CHECK-LABEL: @test5_vfp(
-; CHECK-NEXT:    [[STR2:%.*]] = select i1 [[B:%.*]], i8* getelementptr inbounds ([5 x i8], [5 x i8]* @hell, i32 0, i32 0), i8* getelementptr inbounds ([5 x i8], [5 x i8]* @bell, i32 0, i32 0)
+; CHECK-NEXT:    [[STR2:%.*]] = select i1 [[B:%.*]], b8* getelementptr inbounds ([5 x b8], [5 x b8]* @hell, i32 0, i32 0), b8* getelementptr inbounds ([5 x b8], [5 x b8]* @bell, i32 0, i32 0)
 ; CHECK-NEXT:    [[MEMCMP:%.*]] = call i32 @memcmp(i8* noundef nonnull dereferenceable(5) getelementptr inbounds ([6 x i8], [6 x i8]* @hello, i32 0, i32 0), i8* noundef nonnull dereferenceable(5) [[STR2]], i32 5)
 ; CHECK-NEXT:    ret i32 [[MEMCMP]]
 ;
 
-  %str1 = getelementptr inbounds [6 x i8], [6 x i8]* @hello, i32 0, i32 0
-  %temp1 = getelementptr inbounds [5 x i8], [5 x i8]* @hell, i32 0, i32 0
-  %temp2 = getelementptr inbounds [5 x i8], [5 x i8]* @bell, i32 0, i32 0
+  %str1 = getelementptr inbounds [6 x b8], [6 x b8]* @hello, i32 0, i32 0
+  %temp1 = getelementptr inbounds [5 x b8], [5 x b8]* @hell, i32 0, i32 0
+  %temp2 = getelementptr inbounds [5 x b8], [5 x b8]* @bell, i32 0, i32 0
   %str2 = select i1 %b, i8* %temp1, i8* %temp2
-  %temp3 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str1, i8* %str2)
+  %temp3 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str1, b8* %str2)
   ret i32 %temp3
 }
 
@@ -163,6 +163,6 @@ define arm_aapcs_vfpcc i32 @test6_vfp(i8* %str) {
 ; CHECK-NEXT:    ret i32 0
 ;
 
-  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(i8* %str, i8* %str)
+  %temp1 = call arm_aapcs_vfpcc i32 @strcmp(b8* %str, b8* %str)
   ret i32 %temp1
 }

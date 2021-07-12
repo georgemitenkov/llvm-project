@@ -8,8 +8,8 @@ target triple = "x86_64-unknown-linux-gnu"
 
 @stdout = external global %struct._IO_FILE*
 @stderr = external global %struct._IO_FILE*
-@.str = private unnamed_addr constant [13 x i8] c"an error: %d\00", align 1
-@.str1 = private unnamed_addr constant [9 x i8] c"an error\00", align 1
+@.str = private unnamed_addr constant [13 x b8] c"an error: %d\00", align 1
+@.str1 = private unnamed_addr constant [9 x b8] c"an error\00", align 1
 
 define i32 @test1(i32 %a) #0 {
 ; CHECK-LABEL: @test1
@@ -19,17 +19,17 @@ entry:
 
 if.then:                                          ; preds = %entry
   %0 = load %struct._IO_FILE*, %struct._IO_FILE** @stderr, align 8
-  %call = tail call i32 (%struct._IO_FILE*, i8*, ...) @fprintf(%struct._IO_FILE* %0, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str, i64 0, i64 0), i32 %a) #1
+  %call = tail call i32 (%struct._IO_FILE*, b8*, ...) @fprintf(%struct._IO_FILE* %0, b8* getelementptr inbounds ([13 x b8], [13 x b8]* @.str, i64 0, i64 0), i32 %a) #1
   br label %return
 
-; CHECK: %call = tail call i32 (%struct._IO_FILE*, i8*, ...) @fprintf(%struct._IO_FILE* %0, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str, i64 0, i64 0), i32 %a) #[[$AT1:[0-9]+]]
+; CHECK: %call = tail call i32 (%struct._IO_FILE*, b8*, ...) @fprintf(%struct._IO_FILE* %0, b8* getelementptr inbounds ([13 x b8], [13 x b8]* @.str, i64 0, i64 0), i32 %a) #[[$AT1:[0-9]+]]
 
 return:                                           ; preds = %entry, %if.then
   %retval.0 = phi i32 [ 1, %if.then ], [ 0, %entry ]
   ret i32 %retval.0
 }
 
-declare i32 @fprintf(%struct._IO_FILE* nocapture, i8* nocapture readonly, ...) #1
+declare i32 @fprintf(%struct._IO_FILE* nocapture, b8* nocapture readonly, ...) #1
 
 define i32 @test2(i32 %a) #0 {
 ; CHECK-LABEL: @test2
@@ -39,10 +39,10 @@ entry:
 
 if.then:                                          ; preds = %entry
   %0 = load %struct._IO_FILE*, %struct._IO_FILE** @stderr, align 8
-  %1 = tail call i64 @fwrite(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str1, i64 0, i64 0), i64 8, i64 1, %struct._IO_FILE* %0)
+  %1 = tail call i64 @fwrite(i8* bitcast ([9 x b8]* @.str1 to i8*), i64 8, i64 1, %struct._IO_FILE* %0)
   br label %return
 
-; CHECK: tail call i64 @fwrite(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str1, i64 0, i64 0), i64 8, i64 1, %struct._IO_FILE* %0) #[[$AT2:[0-9]+]]
+; CHECK: tail call i64 @fwrite(i8* bitcast ([9 x b8]* @.str1 to i8*), i64 8, i64 1, %struct._IO_FILE* %0) #[[$AT2:[0-9]+]]
 
 return:                                           ; preds = %entry, %if.then
   %retval.0 = phi i32 [ 1, %if.then ], [ 0, %entry ]
@@ -59,10 +59,10 @@ entry:
 
 if.then:                                          ; preds = %entry
   %0 = load %struct._IO_FILE*, %struct._IO_FILE** @stdout, align 8
-  %1 = tail call i64 @fwrite(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str1, i64 0, i64 0), i64 8, i64 1, %struct._IO_FILE* %0)
+  %1 = tail call i64 @fwrite(i8* bitcast ([9 x b8]* @.str1 to i8*), i64 8, i64 1, %struct._IO_FILE* %0)
   br label %return
 
-; CHECK-NOT: tail call i64 @fwrite(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str1, i64 0, i64 0), i64 8, i64 1, %struct._IO_FILE* %0) #[[$AT2]]
+; CHECK-NOT: tail call i64 @fwrite(i8* bitcast ([9 x b8]* @.str1 to i8*), i64 8, i64 1, %struct._IO_FILE* %0) #[[$AT2]]
 
 return:                                           ; preds = %entry, %if.then
   %retval.0 = phi i32 [ 1, %if.then ], [ 0, %entry ]

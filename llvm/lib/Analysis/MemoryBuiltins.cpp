@@ -163,13 +163,13 @@ getAllocationDataForFunction(const Function *Callee, AllocType AllocTy,
   int SndParam = FnData->SndParam;
   FunctionType *FTy = Callee->getFunctionType();
 
-  if (FTy->getReturnType() == Type::getInt8PtrTy(FTy->getContext()) &&
+  Type *B8Ptr = Type::getByte8Ty(FTy->getContext())->getPointerTo();
+  Type *I8Ptr = Type::getInt8Ty(FTy->getContext())->getPointerTo();
+  if ((FTy->getReturnType() == B8Ptr || FTy->getReturnType() == I8Ptr) &&
       FTy->getNumParams() == FnData->NumParams &&
-      (FstParam < 0 ||
-       (FTy->getParamType(FstParam)->isIntegerTy(32) ||
-        FTy->getParamType(FstParam)->isIntegerTy(64))) &&
-      (SndParam < 0 ||
-       FTy->getParamType(SndParam)->isIntegerTy(32) ||
+      (FstParam < 0 || (FTy->getParamType(FstParam)->isIntegerTy(32) ||
+                        FTy->getParamType(FstParam)->isIntegerTy(64))) &&
+      (SndParam < 0 || FTy->getParamType(SndParam)->isIntegerTy(32) ||
        FTy->getParamType(SndParam)->isIntegerTy(64)))
     return *FnData;
   return None;
@@ -477,7 +477,9 @@ bool llvm::isLibFreeFunction(const Function *F, const LibFunc TLIFn) {
     return false;
   if (FTy->getNumParams() != ExpectedNumParams)
     return false;
-  if (FTy->getParamType(0) != Type::getInt8PtrTy(F->getContext()))
+  Type *B8Ptr = Type::getByte8Ty(F->getContext())->getPointerTo();
+  Type *I8Ptr = Type::getInt8Ty(F->getContext())->getPointerTo();
+  if (FTy->getParamType(0) != B8Ptr && FTy->getParamType(0) != I8Ptr)
     return false;
 
   return true;

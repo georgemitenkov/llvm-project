@@ -41,6 +41,9 @@ namespace llvm {
                            LibFunc LongDoubleFn);
 
   /// Return V if it is an i8*, otherwise cast it to i8*.
+  Value *castToI8Ptr(Value *V, IRBuilderBase &B);
+
+  /// Return V if it is an b8*, otherwise cast it to b8*.
   Value *castToCStr(Value *V, IRBuilderBase &B);
 
   /// Emit a call to the strlen function to the builder, for the specified
@@ -51,7 +54,7 @@ namespace llvm {
 
   /// Emit a call to the strdup function to the builder, for the specified
   /// pointer. Ptr is required to be some pointer type, and the return value has
-  /// 'i8*' type.
+  /// 'b8*' type.
   Value *emitStrDup(Value *Ptr, IRBuilderBase &B, const TargetLibraryInfo *TLI);
 
   /// Emit a call to the strnlen function to the builder, for the specified
@@ -62,7 +65,7 @@ namespace llvm {
 
   /// Emit a call to the strchr function to the builder, for the specified
   /// pointer and character. Ptr is required to be some pointer type, and the
-  /// return value has 'i8*' type.
+  /// return value has 'b8*' type.
   Value *emitStrChr(Value *Ptr, char C, IRBuilderBase &B,
                     const TargetLibraryInfo *TLI);
 

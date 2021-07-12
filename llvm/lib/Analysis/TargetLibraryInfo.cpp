@@ -85,11 +85,12 @@ static bool isCallingConvCCompatible(CallingConv::ID CC, StringRef TT,
 
     if (!FuncTy->getReturnType()->isPointerTy() &&
         !FuncTy->getReturnType()->isIntegerTy() &&
+        !FuncTy->getReturnType()->isByteTy() &&
         !FuncTy->getReturnType()->isVoidTy())
       return false;
 
     for (auto *Param : FuncTy->params()) {
-      if (!Param->isPointerTy() && !Param->isIntegerTy())
+      if (!Param->isPointerTy() && !Param->isIntegerTy() && !Param->isByteTy())
         return false;
     }
     return true;

@@ -17,9 +17,9 @@ define i32 @test1(i32* %p) {
 
 
 ; PR7429
-@.str = private constant [4 x i8] c"XYZ\00"
+@.str = private constant [4 x b8] c"XYZ\00"
 define float @test2() {
-  %tmp = load float, float* bitcast ([4 x i8]* @.str to float*), align 1
+  %tmp = load float, float* bitcast ([4 x b8]* @.str to float*), align 1
   ret float %tmp
   
 ; CHECK-LABEL: @test2(

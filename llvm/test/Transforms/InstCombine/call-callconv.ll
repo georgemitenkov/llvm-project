@@ -2,7 +2,7 @@
 ; RUN: opt < %s -instcombine -S | FileCheck %s
 ; Verify that the non-default calling conv doesn't prevent the libcall simplification
 
-@.str = private unnamed_addr constant [4 x i8] c"abc\00", align 1
+@.str = private unnamed_addr constant [4 x b8] c"abc\00", align 1
 
 define arm_aapcscc i32 @_abs(i32 %i) nounwind readnone {
 ; CHECK-LABEL: @_abs(
@@ -30,19 +30,20 @@ define arm_aapcscc i32 @_strlen1() {
 ; CHECK-LABEL: @_strlen1(
 ; CHECK-NEXT:    ret i32 3
 ;
-  %call = tail call arm_aapcscc i32 @strlen(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0))
+  %call = tail call arm_aapcscc i32 @strlen(b8* getelementptr inbounds ([4 x b8], [4 x b8]* @.str, i32 0, i32 0))
   ret i32 %call
 }
 
-declare arm_aapcscc i32 @strlen(i8*)
+declare arm_aapcscc i32 @strlen(b8*)
 
-define arm_aapcscc zeroext i1 @_strlen2(i8* %str) {
+define arm_aapcscc zeroext i1 @_strlen2(b8* %str) {
 ; CHECK-LABEL: @_strlen2(
-; CHECK-NEXT:    [[STRLENFIRST:%.*]] = load i8, i8* [[STR:%.*]], align 1
-; CHECK-NEXT:    [[CMP:%.*]] = icmp ne i8 [[STRLENFIRST]], 0
+; CHECK-NEXT:    [[STRLENFIRST:%.*]] = load b8, b8* [[STR:%.*]], align 1
+; CHECK-NEXT:    [[CAST:%.*]] = bytecast b8 [[STRLENFIRST]] to i8
+; CHECK-NEXT:    [[CMP:%.*]] = icmp ne i8 [[CAST]], 0
 ; CHECK-NEXT:    ret i1 [[CMP]]
 ;
-  %call = tail call arm_aapcscc i32 @strlen(i8* %str)
+  %call = tail call arm_aapcscc i32 @strlen(b8* %str)
   %cmp = icmp ne i32 %call, 0
   ret i1 %cmp
 }

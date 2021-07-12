@@ -6,7 +6,7 @@
 ; ModuleID = 'apf.c'
 target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-v128:128:128-a0:0:64-f80:128:128"
 target triple = "i386-apple-darwin9.6"
-@"\01LC" = internal constant [4 x i8] c"%f\0A\00"		; <[4 x i8]*> [#uses=1]
+@"\01LC" = internal constant [4 x b8] c"%f\0A\00"		; <[4 x b8]*> [#uses=1]
 
 define void @foo1() nounwind {
 entry:
@@ -20,14 +20,14 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
 	ret void
 }
 
-declare i32 @printf(i8*, ...) nounwind
+declare i32 @printf(b8*, ...) nounwind
 
 define void @foo2() nounwind {
 entry:
@@ -41,7 +41,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -60,7 +60,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -79,7 +79,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -98,7 +98,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -117,7 +117,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -136,7 +136,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -155,7 +155,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -174,7 +174,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -193,7 +193,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -212,7 +212,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -231,7 +231,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -250,7 +250,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -269,7 +269,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -288,7 +288,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry
@@ -307,7 +307,7 @@ entry:
 	%2 = load float, float* %x, align 4		; <float> [#uses=1]
 	%3 = fpext float %2 to double		; <double> [#uses=1]
 	%4 = frem double %3, %1		; <double> [#uses=1]
-	%5 = call i32 (i8*, ...) @printf(i8* getelementptr ([4 x i8], [4 x i8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
+	%5 = call i32 (b8*, ...) @printf(b8* getelementptr ([4 x b8], [4 x b8]* @"\01LC", i32 0, i32 0), double %4) nounwind		; <i32> [#uses=0]
 	br label %return
 
 return:		; preds = %entry

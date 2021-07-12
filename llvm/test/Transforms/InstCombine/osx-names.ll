@@ -10,21 +10,21 @@ target triple = "i386-apple-macosx10.7.2"
 %struct.__sbuf = type { i8*, i32 }
 %struct.__sFILEX = type opaque
 
-@.str = private unnamed_addr constant [13 x i8] c"Hello world\0A\00", align 1
-@.str2 = private unnamed_addr constant [3 x i8] c"%s\00", align 1
+@.str = private unnamed_addr constant [13 x b8] c"Hello world\0A\00", align 1
+@.str2 = private unnamed_addr constant [3 x b8] c"%s\00", align 1
 
 define void @test1(%struct.__sFILE* %stream) nounwind {
 ; CHECK-LABEL: define void @test1(
 ; CHECK: call i32 @"fwrite$UNIX2003"
-  %call = tail call i32 (%struct.__sFILE*, i8*, ...) @fprintf(%struct.__sFILE* %stream, i8* getelementptr inbounds ([13 x i8], [13 x i8]* @.str, i32 0, i32 0)) nounwind
+  %call = tail call i32 (%struct.__sFILE*, b8*, ...) @fprintf(%struct.__sFILE* %stream, b8* getelementptr inbounds ([13 x b8], [13 x b8]* @.str, i32 0, i32 0)) nounwind
   ret void
 }
 
-define void @test2(%struct.__sFILE* %stream, i8* %str) nounwind ssp {
+define void @test2(%struct.__sFILE* %stream, b8* %str) nounwind ssp {
 ; CHECK-LABEL: define void @test2(
 ; CHECK: call i32 @"fputs$UNIX2003"
-  %call = tail call i32 (%struct.__sFILE*, i8*, ...) @fprintf(%struct.__sFILE* %stream, i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str2, i32 0, i32 0), i8* %str) nounwind
+  %call = tail call i32 (%struct.__sFILE*, b8*, ...) @fprintf(%struct.__sFILE* %stream, b8* getelementptr inbounds ([3 x b8], [3 x b8]* @.str2, i32 0, i32 0), b8* %str) nounwind
   ret void
 }
 
-declare i32 @fprintf(%struct.__sFILE*, i8*, ...) nounwind
+declare i32 @fprintf(%struct.__sFILE*, b8*, ...) nounwind

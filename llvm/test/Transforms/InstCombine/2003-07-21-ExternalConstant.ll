@@ -22,9 +22,9 @@ declare void @bcopy(i8*, i8*, i32)
 
 declare i32 @bcmp(i8*, i8*, i32)
 
-declare i32 @fputs(i8*, i8*)
+declare i32 @fputs(b8*, b8*)
 
-declare i32 @fputs_unlocked(i8*, i8*)
+declare i32 @fputs_unlocked(b8*, b8*)
 
 define i32 @function(i32 %a.1) {
 entry:

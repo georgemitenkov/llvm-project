@@ -48,7 +48,7 @@ target triple = "x86_64-unknown-linux-gnu"
 
 %struct.S1 = type { i32, i32 }
 
-@.str = private unnamed_addr constant [3 x i8] c"%d\00", align 1
+@.str = private unnamed_addr constant [3 x b8] c"%d\00", align 1
 
 define dso_local i32 @_Z3barv() !dbg !7 {
 entry:
@@ -76,10 +76,10 @@ if.end:                                           ; preds = %entry
   store i32 3, i32* %p2, align 4, !dbg !38
   %p12 = bitcast i64* %result to i32*, !dbg !38
   call void @llvm.dbg.value(metadata i32* %p12, metadata !22, metadata !DIExpression()), !dbg !38
-  %call3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str, i64 0, i64 0), i32 2), !dbg !38
+  %call3 = call i32 (b8*, ...) @printf(b8* getelementptr inbounds ([3 x b8], [3 x b8]* @.str, i64 0, i64 0), i32 2), !dbg !38
   %add.ptr = getelementptr inbounds i32, i32* %p12, i64 1, !dbg !38
   %2 = load i32, i32* %add.ptr, align 4, !dbg !38
-  %call4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str, i64 0, i64 0), i32 %2), !dbg !38
+  %call4 = call i32 (b8*, ...) @printf(b8* getelementptr inbounds ([3 x b8], [3 x b8]* @.str, i64 0, i64 0), i32 %2), !dbg !38
   %p15 = bitcast i64* %result to i32*, !dbg !38
   %3 = load i32, i32* %p15, align 8, !dbg !38
   %add = add nsw i32 %3, 1, !dbg !38
@@ -98,7 +98,7 @@ declare void @llvm.dbg.declare(metadata, metadata, metadata) #2
 
 declare dso_local i64 @_Z3foov() #3
 
-declare dso_local i32 @printf(i8*, ...) #3
+declare dso_local i32 @printf(b8*, ...) #3
 
 declare void @llvm.lifetime.end.p0i8(i64 immarg, i8* nocapture) #1
 
