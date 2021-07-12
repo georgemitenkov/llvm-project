@@ -2641,13 +2641,18 @@ Value *LibCallSimplifier::optimizeSnPrintFString(CallInst *CI,
         return nullptr;
 
       // snprintf(dst, size, "%c", chr) --> *(i8*)dst = chr; *((i8*)dst+1) = 0
-      if (!CI->getArgOperand(3)->getType()->isIntegerTy())
+      Type *ChrTy = CI->getArgOperand(3)->getType();
+      if (!ChrTy->isByteTy(8) && !ChrTy->isIntegerTy())
         return nullptr;
-      Value *V = B.CreateTrunc(CI->getArgOperand(3), B.getInt8Ty(), "char");
+
+      Value *V = CI->getArgOperand(3);
+      if (ChrTy->isIntegerTy())
+        V = B.CreateBitCast(B.CreateTrunc(CI->getArgOperand(3), B.getInt8Ty()), B.getByte8Ty(), "char");
+
       Value *Ptr = castToCStr(CI->getArgOperand(0), B);
       B.CreateStore(V, Ptr);
-      Ptr = B.CreateGEP(B.getInt8Ty(), Ptr, B.getInt32(1), "nul");
-      B.CreateStore(B.getInt8(0), Ptr);
+      Ptr = B.CreateGEP(B.getByte8Ty(), Ptr, B.getInt32(1), "nul");
+      B.CreateStore(Constant::getNullValue(B.getByte8Ty()), Ptr);
 
       return ConstantInt::get(CI->getType(), 1);
     }
