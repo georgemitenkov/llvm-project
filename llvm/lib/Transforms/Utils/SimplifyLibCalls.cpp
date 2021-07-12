@@ -2724,7 +2724,7 @@ Value *LibCallSimplifier::optimizeFPrintFString(CallInst *CI,
   // Decode the second character of the format string.
   if (FormatStr[1] == 'c') {
     // fprintf(F, "%c", chr) --> fputc(chr, F)
-    if (!CI->getArgOperand(2)->getType()->isIntegerTy())
+    if (!CI->getArgOperand(2)->getType()->isByteTy() && !CI->getArgOperand(2)->getType()->isIntegerTy())
       return nullptr;
     return emitFPutC(CI->getArgOperand(2), CI->getArgOperand(0), B, TLI);
   }

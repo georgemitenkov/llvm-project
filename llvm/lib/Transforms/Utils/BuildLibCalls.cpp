@@ -1585,11 +1585,12 @@ Value *llvm::emitFPutC(Value *Char, Value *File, IRBuilderBase &B,
                                             B.getInt32Ty(), File->getType());
   if (File->getType()->isPointerTy())
     inferLibFuncAttributes(M, FPutcName, *TLI);
+  Value *V = Char;
   if (Char->getType()->isByteTy())
-    Char = B.CreateByteCastToInteger(Char);
-  Char = B.CreateIntCast(Char, B.getInt32Ty(), /*isSigned*/true,
+    V = B.CreateByteCastToInteger(Char);
+  V = B.CreateIntCast(V, B.getInt32Ty(), /*isSigned*/true,
                          "chari");
-  CallInst *CI = B.CreateCall(F, {Char, File}, FPutcName);
+  CallInst *CI = B.CreateCall(F, {V, File}, FPutcName);
 
   if (const Function *Fn =
           dyn_cast<Function>(F.getCallee()->stripPointerCasts()))
