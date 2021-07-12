@@ -1811,8 +1811,8 @@ void computeKnownBits(const Value *V, const APInt &DemandedElts,
   Type *Ty = V->getType();
   unsigned BitWidth = Known.getBitWidth();
 
-  assert((Ty->isIntOrIntVectorTy(BitWidth) || Ty->isPtrOrPtrVectorTy()) &&
-         "Not integer or pointer type!");
+  assert((Ty->isIntOrIntVectorTy(BitWidth) || Ty->isByteOrByteVectorTy(BitWidth) || Ty->isPtrOrPtrVectorTy()) &&
+         "Not integer, byte or pointer type!");
 
   if (auto *FVTy = dyn_cast<FixedVectorType>(Ty)) {
     assert(
