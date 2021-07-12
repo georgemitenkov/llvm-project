@@ -5,7 +5,7 @@
 target datalayout = "e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-v128:128:128-a0:0:64-f80:128:128"
 
 @a = private global [60 x i8] zeroinitializer, align 1 ; <[60 x i8]*>
-@.str = private constant [8 x i8] c"abcdefg\00"   ; <[8 x i8]*>
+@.str = private constant [8 x b8] c"abcdefg\00"   ; <[8 x i8]*>
 define i32 @foo() nounwind {
 ; CHECK-LABEL: @foo(
 ; CHECK-NEXT:    ret i32 60
@@ -97,13 +97,13 @@ define i32 @test2() nounwind {
 ; rdar://7674946
 @array = internal global [480 x float] zeroinitializer ; <[480 x float]*> [#uses=1]
 
-declare i8* @__memcpy_chk(i8*, i8*, i32, i32) nounwind
+declare b8* @__memcpy_chk(b8*, b8*, i32, i32) nounwind
 
 declare i32 @llvm.objectsize.i32.p0i8(i8*, i1, i1, i1) nounwind readonly
 
 declare i32 @llvm.objectsize.i32.p1i8(i8 addrspace(1)*, i1, i1, i1) nounwind readonly
 
-declare i8* @__inline_memcpy_chk(i8*, i8*, i32) nounwind inlinehint
+declare b8* @__inline_memcpy_chk(b8*, b8*, i32) nounwind inlinehint
 
 define void @test3() nounwind {
 ; CHECK-LABEL: @test3(
@@ -112,7 +112,7 @@ define void @test3() nounwind {
 ; CHECK:       bb11:
 ; CHECK-NEXT:    unreachable
 ; CHECK:       bb12:
-; CHECK-NEXT:    [[TMP0:%.*]] = call i8* @__inline_memcpy_chk(i8* bitcast (float* getelementptr inbounds ([480 x float], [480 x float]* @array, i32 0, i32 1) to i8*), i8* undef, i32 512) [[ATTR3:#.*]]
+; CHECK-NEXT:    [[TMP0:%.*]] = call b8* @__inline_memcpy_chk(b8* bitcast (float* getelementptr inbounds ([480 x float], [480 x float]* @array, i32 0, i32 1) to b8*), b8* undef, i32 512) [[ATTR3:#.*]]
 ; CHECK-NEXT:    unreachable
 ;
 entry:
@@ -122,13 +122,13 @@ bb11:
   %0 = getelementptr inbounds float, float* getelementptr inbounds ([480 x float], [480 x float]* @array, i32 0, i32 128), i32 -127 ; <float*> [#uses=1]
   %1 = bitcast float* %0 to i8*                   ; <i8*> [#uses=1]
   %2 = call i32 @llvm.objectsize.i32.p0i8(i8* %1, i1 false, i1 false, i1 false) ; <i32> [#uses=1]
-  %3 = call i8* @__memcpy_chk(i8* undef, i8* undef, i32 512, i32 %2) nounwind ; <i8*> [#uses=0]
+  %3 = call b8* @__memcpy_chk(b8* undef, b8* undef, i32 512, i32 %2) nounwind ; <i8*> [#uses=0]
   unreachable
 
 bb12:
   %4 = getelementptr inbounds float, float* getelementptr inbounds ([480 x float], [480 x float]* @array, i32 0, i32 128), i32 -127 ; <float*> [#uses=1]
-  %5 = bitcast float* %4 to i8*                   ; <i8*> [#uses=1]
-  %6 = call i8* @__inline_memcpy_chk(i8* %5, i8* undef, i32 512) nounwind inlinehint ; <i8*> [#uses=0]
+  %5 = bitcast float* %4 to b8*                   ; <b8*> [#uses=1]
+  %6 = call b8* @__inline_memcpy_chk(b8* %5, b8* undef, i32 512) nounwind inlinehint ; <i8*> [#uses=0]
   unreachable
 }
 
@@ -136,13 +136,13 @@ bb12:
 
 %struct.data = type { [100 x i32], [100 x i32], [1024 x i8] }
 
-define i32 @test4(i8** %esc) nounwind ssp {
+define i32 @test4(b8** %esc) nounwind ssp {
 ; CHECK-LABEL: @test4(
 ; CHECK-NEXT:  entry:
 ; CHECK-NEXT:    [[TMP0:%.*]] = alloca [[STRUCT_DATA:%.*]], align 8
-; CHECK-NEXT:    [[TMP1:%.*]] = bitcast %struct.data* [[TMP0]] to i8*
-; CHECK-NEXT:    call void @llvm.memset.p0i8.i32(i8* noundef nonnull align 8 dereferenceable(1824) [[TMP1]], i8 0, i32 1824, i1 false) [[ATTR0:#.*]]
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8** [[ESC:%.*]] to %struct.data**
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast %struct.data* [[TMP0]] to b8*
+; CHECK-NEXT:    call void @llvm.memset.p0b8.i32(b8* noundef nonnull align 8 dereferenceable(1824) [[TMP1]], i8 0, i32 1824, i1 false) [[ATTR0:#.*]]
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast b8** [[ESC:%.*]] to %struct.data**
 ; CHECK-NEXT:    store %struct.data* [[TMP0]], %struct.data** [[TMP2]], align 4
 ; CHECK-NEXT:    ret i32 0
 ;
@@ -150,138 +150,150 @@ entry:
   %0 = alloca %struct.data, align 8
   %1 = bitcast %struct.data* %0 to i8*
   %2 = call i32 @llvm.objectsize.i32.p0i8(i8* %1, i1 false, i1 false, i1 false) nounwind
-  %3 = call i8* @__memset_chk(i8* %1, i32 0, i32 1824, i32 %2) nounwind
-  store i8* %1, i8** %esc
+  %cast = bitcast i8* %1 to b8*
+  %3 = call b8* @__memset_chk(b8* %cast, i32 0, i32 1824, i32 %2) nounwind
+  store b8* %cast, b8** %esc
   ret i32 0
 }
 
 ; rdar://7782496
 @s = external global i8*
 
-define i8* @test5(i32 %n) nounwind ssp {
+define b8* @test5(i32 %n) nounwind ssp {
 ; CHECK-LABEL: @test5(
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[TMP0:%.*]] = tail call noalias dereferenceable_or_null(20) i8* @malloc(i32 20) [[ATTR0]]
-; CHECK-NEXT:    [[TMP1:%.*]] = load i8*, i8** @s, align 8
-; CHECK-NEXT:    call void @llvm.memcpy.p0i8.p0i8.i32(i8* noundef nonnull align 1 dereferenceable(10) [[TMP0]], i8* noundef nonnull align 1 dereferenceable(10) [[TMP1]], i32 10, i1 false) [[ATTR0]]
-; CHECK-NEXT:    ret i8* [[TMP0]]
+; CHECK-NEXT:    [[TMP0:%.*]] = tail call noalias dereferenceable_or_null(20) b8* @malloc(i32 20) [[ATTR0]]
+; CHECK-NEXT:    [[TMP1:%.*]] = load b8*, b8** bitcast (i8** @s to b8**), align 8
+; CHECK-NEXT:    call void @llvm.memcpy.p0b8.p0b8.i32(b8* noundef nonnull align 1 dereferenceable(10) [[TMP0]], b8* noundef nonnull align 1 dereferenceable(10) [[TMP1]], i32 10, i1 false) [[ATTR0]]
+; CHECK-NEXT:    ret b8* [[TMP0]]
 ;
 entry:
-  %0 = tail call noalias i8* @malloc(i32 20) nounwind
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %0, i1 false, i1 false, i1 false)
+  %0 = tail call noalias b8* @malloc(i32 20) nounwind
+  %cast1 = bitcast b8* %0 to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast1, i1 false, i1 false, i1 false)
   %2 = load i8*, i8** @s, align 8
-  %3 = tail call i8* @__memcpy_chk(i8* %0, i8* %2, i32 10, i32 %1) nounwind
-  ret i8* %0
+  %cast2 = bitcast i8* %2 to b8*
+  %3 = tail call b8* @__memcpy_chk(b8* %0, b8* %cast2, i32 10, i32 %1) nounwind
+  ret b8* %0
 }
 
 define void @test6(i32 %n) nounwind ssp {
 ; CHECK-LABEL: @test6(
 ; CHECK-NEXT:  entry:
-; CHECK-NEXT:    [[TMP0:%.*]] = tail call noalias dereferenceable_or_null(20) i8* @malloc(i32 20) [[ATTR0]]
-; CHECK-NEXT:    [[TMP1:%.*]] = load i8*, i8** @s, align 8
-; CHECK-NEXT:    [[TMP2:%.*]] = tail call i8* @__memcpy_chk(i8* [[TMP0]], i8* [[TMP1]], i32 30, i32 20) [[ATTR0]]
+; CHECK-NEXT:    [[TMP0:%.*]] = tail call noalias dereferenceable_or_null(20) b8* @malloc(i32 20) [[ATTR0]]
+; CHECK-NEXT:    [[TMP1:%.*]] = load b8*, b8** bitcast (i8** @s to b8**), align 8
+; CHECK-NEXT:    [[TMP2:%.*]] = tail call b8* @__memcpy_chk(b8* [[TMP0]], b8* [[TMP1]], i32 30, i32 20) [[ATTR0]]
 ; CHECK-NEXT:    ret void
 ;
 entry:
-  %0 = tail call noalias i8* @malloc(i32 20) nounwind
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %0, i1 false, i1 false, i1 false)
+  %0 = tail call noalias b8* @malloc(i32 20) nounwind
+  %cast1 = bitcast b8* %0 to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast1, i1 false, i1 false, i1 false)
   %2 = load i8*, i8** @s, align 8
-  %3 = tail call i8* @__memcpy_chk(i8* %0, i8* %2, i32 30, i32 %1) nounwind
+  %cast2 = bitcast i8* %2 to b8*
+  %3 = tail call b8* @__memcpy_chk(b8* %0, b8* %cast2, i32 30, i32 %1) nounwind
   ret void
 }
 
-declare i8* @__memset_chk(i8*, i32, i32, i32) nounwind
+declare b8* @__memset_chk(b8*, i32, i32, i32) nounwind
 
-declare noalias i8* @malloc(i32) nounwind
+declare noalias b8* @malloc(i32) nounwind
 
-define i32 @test7(i8** %esc) {
+define i32 @test7(b8** %esc) {
 ; CHECK-LABEL: @test7(
-; CHECK-NEXT:    [[ALLOC:%.*]] = call noalias dereferenceable_or_null(48) i8* @malloc(i32 48) [[ATTR0]]
-; CHECK-NEXT:    store i8* [[ALLOC]], i8** [[ESC:%.*]], align 4
+; CHECK-NEXT:    [[ALLOC:%.*]] = call noalias dereferenceable_or_null(48) b8* @malloc(i32 48) [[ATTR0]]
+; CHECK-NEXT:    store b8* [[ALLOC]], b8** [[ESC:%.*]], align 4
 ; CHECK-NEXT:    ret i32 32
 ;
-  %alloc = call noalias i8* @malloc(i32 48) nounwind
-  store i8* %alloc, i8** %esc
-  %gep = getelementptr inbounds i8, i8* %alloc, i32 16
-  %objsize = call i32 @llvm.objectsize.i32.p0i8(i8* %gep, i1 false, i1 false, i1 false) nounwind readonly
+  %alloc = call noalias b8* @malloc(i32 48) nounwind
+  store b8* %alloc, b8** %esc
+  %gep = getelementptr inbounds b8, b8* %alloc, i32 16
+  %cast = bitcast b8* %gep to i8*
+  %objsize = call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 false, i1 false, i1 false) nounwind readonly
   ret i32 %objsize
 }
 
-declare noalias i8* @calloc(i32, i32) nounwind
+declare noalias b8* @calloc(i32, i32) nounwind
 
-define i32 @test8(i8** %esc) {
+define i32 @test8(b8** %esc) {
 ; CHECK-LABEL: @test8(
-; CHECK-NEXT:    [[ALLOC:%.*]] = call noalias dereferenceable_or_null(35) i8* @calloc(i32 5, i32 7) [[ATTR0]]
-; CHECK-NEXT:    store i8* [[ALLOC]], i8** [[ESC:%.*]], align 4
+; CHECK-NEXT:    [[ALLOC:%.*]] = call noalias dereferenceable_or_null(35) b8* @calloc(i32 5, i32 7) [[ATTR0]]
+; CHECK-NEXT:    store b8* [[ALLOC]], b8** [[ESC:%.*]], align 4
 ; CHECK-NEXT:    ret i32 30
 ;
-  %alloc = call noalias i8* @calloc(i32 5, i32 7) nounwind
-  store i8* %alloc, i8** %esc
-  %gep = getelementptr inbounds i8, i8* %alloc, i32 5
-  %objsize = call i32 @llvm.objectsize.i32.p0i8(i8* %gep, i1 false, i1 false, i1 false) nounwind readonly
+  %alloc = call noalias b8* @calloc(i32 5, i32 7) nounwind
+  store b8* %alloc, b8** %esc
+  %gep = getelementptr inbounds b8, b8* %alloc, i32 5
+  %cast = bitcast b8* %gep to i8*
+  %objsize = call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 false, i1 false, i1 false) nounwind readonly
   ret i32 %objsize
 }
 
-declare noalias i8* @strdup(i8* nocapture) nounwind
-declare noalias i8* @strndup(i8* nocapture, i32) nounwind
+declare noalias b8* @strdup(b8* nocapture) nounwind
+declare noalias b8* @strndup(b8* nocapture, i32) nounwind
 
-define i32 @test9(i8** %esc) {
+define i32 @test9(b8** %esc) {
 ; CHECK-LABEL: @test9(
-; CHECK-NEXT:    [[CALL:%.*]] = tail call dereferenceable_or_null(8) i8* @strdup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i32 0, i32 0)) [[ATTR0]]
-; CHECK-NEXT:    store i8* [[CALL]], i8** [[ESC:%.*]], align 8
+; CHECK-NEXT:    [[CALL:%.*]] = tail call dereferenceable_or_null(8) b8* @strdup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i32 0, i32 0)) [[ATTR0]]
+; CHECK-NEXT:    store b8* [[CALL]], b8** [[ESC:%.*]], align 8
 ; CHECK-NEXT:    ret i32 8
 ;
-  %call = tail call i8* @strdup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0)) nounwind
-  store i8* %call, i8** %esc, align 8
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %call, i1 true, i1 false, i1 false)
+  %call = tail call b8* @strdup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i64 0, i64 0)) nounwind
+  store b8* %call, b8** %esc, align 8
+  %cast = bitcast b8* %call to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 true, i1 false, i1 false)
   ret i32 %1
 }
 
-define i32 @test10(i8** %esc) {
+define i32 @test10(b8** %esc) {
 ; CHECK-LABEL: @test10(
-; CHECK-NEXT:    [[CALL:%.*]] = tail call dereferenceable_or_null(4) i8* @strndup(i8* dereferenceable(8) getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i32 0, i32 0), i32 3) [[ATTR0]]
-; CHECK-NEXT:    store i8* [[CALL]], i8** [[ESC:%.*]], align 8
+; CHECK-NEXT:    [[CALL:%.*]] = tail call dereferenceable_or_null(4) b8* @strndup(b8* dereferenceable(8) getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i32 0, i32 0), i32 3) [[ATTR0]]
+; CHECK-NEXT:    store b8* [[CALL]], b8** [[ESC:%.*]], align 8
 ; CHECK-NEXT:    ret i32 4
 ;
-  %call = tail call i8* @strndup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i32 3) nounwind
-  store i8* %call, i8** %esc, align 8
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %call, i1 true, i1 false, i1 false)
+  %call = tail call b8* @strndup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i64 0, i64 0), i32 3) nounwind
+  store b8* %call, b8** %esc, align 8
+  %cast = bitcast b8* %call to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 true, i1 false, i1 false)
   ret i32 %1
 }
 
-define i32 @test11(i8** %esc) {
+define i32 @test11(b8** %esc) {
 ; CHECK-LABEL: @test11(
-; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) i8* @strdup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i32 0, i32 0))
-; CHECK-NEXT:    store i8* [[STRDUP]], i8** [[ESC:%.*]], align 8
+; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) b8* @strdup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i32 0, i32 0))
+; CHECK-NEXT:    store b8* [[STRDUP]], b8** [[ESC:%.*]], align 8
 ; CHECK-NEXT:    ret i32 8
 ;
-  %call = tail call i8* @strndup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i32 7) nounwind
-  store i8* %call, i8** %esc, align 8
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %call, i1 true, i1 false, i1 false)
+  %call = tail call b8* @strndup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i64 0, i64 0), i32 7) nounwind
+  store b8* %call, b8** %esc, align 8
+  %cast = bitcast b8* %call to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 true, i1 false, i1 false)
   ret i32 %1
 }
 
-define i32 @test12(i8** %esc) {
+define i32 @test12(b8** %esc) {
 ; CHECK-LABEL: @test12(
-; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) i8* @strdup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i32 0, i32 0))
-; CHECK-NEXT:    store i8* [[STRDUP]], i8** [[ESC:%.*]], align 8
+; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) b8* @strdup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i32 0, i32 0))
+; CHECK-NEXT:    store b8* [[STRDUP]], b8** [[ESC:%.*]], align 8
 ; CHECK-NEXT:    ret i32 8
 ;
-  %call = tail call i8* @strndup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i32 8) nounwind
-  store i8* %call, i8** %esc, align 8
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %call, i1 true, i1 false, i1 false)
+  %call = tail call b8* @strndup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i64 0, i64 0), i32 8) nounwind
+  store b8* %call, b8** %esc, align 8
+  %cast = bitcast b8* %call to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 true, i1 false, i1 false)
   ret i32 %1
 }
 
-define i32 @test13(i8** %esc) {
+define i32 @test13(b8** %esc) {
 ; CHECK-LABEL: @test13(
-; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) i8* @strdup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i32 0, i32 0))
-; CHECK-NEXT:    store i8* [[STRDUP]], i8** [[ESC:%.*]], align 8
+; CHECK-NEXT:    [[STRDUP:%.*]] = call dereferenceable_or_null(8) b8* @strdup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i32 0, i32 0))
+; CHECK-NEXT:    store b8* [[STRDUP]], b8** [[ESC:%.*]], align 8
 ; CHECK-NEXT:    ret i32 8
 ;
-  %call = tail call i8* @strndup(i8* getelementptr inbounds ([8 x i8], [8 x i8]* @.str, i64 0, i64 0), i32 57) nounwind
-  store i8* %call, i8** %esc, align 8
-  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %call, i1 true, i1 false, i1 false)
+  %call = tail call b8* @strndup(b8* getelementptr inbounds ([8 x b8], [8 x b8]* @.str, i64 0, i64 0), i32 57) nounwind
+  store b8* %call, b8** %esc, align 8
+  %cast = bitcast b8* %call to i8*
+  %1 = tail call i32 @llvm.objectsize.i32.p0i8(i8* %cast, i1 true, i1 false, i1 false)
   ret i32 %1
 }
 
