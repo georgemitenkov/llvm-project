@@ -3132,7 +3132,8 @@ CastInst *CastInst::CreateBitOrPointerCast(Value *S, Type *Ty,
 CastInst *CastInst::CreateIntegerCast(Value *C, Type *Ty,
                                       bool isSigned, const Twine &Name,
                                       Instruction *InsertBefore) {
-  assert(C->getType()->isIntOrIntVectorTy() && Ty->isIntOrIntVectorTy() &&
+  assert(C->getType()->isIntOrIntVectorTy() &&
+         (Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
          "Invalid integer cast");
   unsigned SrcBits = C->getType()->getScalarSizeInBits();
   unsigned DstBits = Ty->getScalarSizeInBits();
@@ -3146,7 +3147,8 @@ CastInst *CastInst::CreateIntegerCast(Value *C, Type *Ty,
 CastInst *CastInst::CreateIntegerCast(Value *C, Type *Ty,
                                       bool isSigned, const Twine &Name,
                                       BasicBlock *InsertAtEnd) {
-  assert(C->getType()->isIntOrIntVectorTy() && Ty->isIntOrIntVectorTy() &&
+  assert(C->getType()->isIntOrIntVectorTy() &&
+         (Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
          "Invalid cast");
   unsigned SrcBits = C->getType()->getScalarSizeInBits();
   unsigned DstBits = Ty->getScalarSizeInBits();
@@ -3220,6 +3222,9 @@ bool CastInst::isBitCastable(Type *SrcTy, Type *DestTy) {
   if (DestTy->isX86_MMXTy() || SrcTy->isX86_MMXTy())
     return false;
 
+  if (SrcTy->isByteOrByteVectorTy() && !DestTy->isByteOrByteVectorTy())
+    return false;
+
   return true;
 }
 
@@ -3270,7 +3275,21 @@ CastInst::getCastOpcode(
   unsigned DestBits = DestTy->getPrimitiveSizeInBits(); // 0 for ptr
 
   // Run through the possibilities ...
-  if (DestTy->isIntegerTy()) {                      // Casting to integral
+  if (DestTy->isByteTy()) {                         // Casting to byte
+    if (SrcTy->isIntegerTy()) {                     // Casting from integral
+      if (DestBits < SrcBits)
+        return Trunc;                               // int -> smaller byte
+      else if (DestBits > SrcBits) {                // its an extension
+        if (SrcIsSigned)
+          return SExt;                              // signed -> SEXT
+        else
+          return ZExt;                              // unsigned -> ZEXT
+      } else {
+        return BitCast;                             // Same size, No-op cast
+      }
+    }
+    llvm_unreachable("Illegal cast to byte type");
+  } else if (DestTy->isIntegerTy()) {               // Casting to integral
     if (SrcTy->isIntegerTy()) {                     // Casting from integral
       if (DestBits < SrcBits)
         return Trunc;                               // int -> smaller int
@@ -3372,13 +3391,16 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
   switch (op) {
   default: return false; // This is an input error
   case Instruction::Trunc:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize > DstScalarBitSize;
   case Instruction::ZExt:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize < DstScalarBitSize;
   case Instruction::SExt:
-    return SrcTy->isIntOrIntVectorTy() && DstTy->isIntOrIntVectorTy() &&
+    return SrcTy->isIntOrIntVectorTy() &&
+           (DstTy->isIntOrIntVectorTy() || DstTy->isByteOrByteVectorTy()) &&
            SrcEC == DstEC && SrcScalarBitSize < DstScalarBitSize;
   case Instruction::FPTrunc:
     return SrcTy->isFPOrFPVectorTy() && DstTy->isFPOrFPVectorTy() &&
@@ -3411,10 +3433,19 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
     if (!SrcPtrTy != !DstPtrTy)
       return false;
 
+    // BitCast cannot convert byte types to non-byte types.
+    if (!SrcPtrTy && SrcTy->isByteOrByteVectorTy() &&
+        !DstTy->isByteOrByteVectorTy())
+      return false;
+
     // For non-pointer cases, the cast is okay if the source and destination bit
-    // widths are identical.
-    if (!SrcPtrTy)
+    // widths are identical. Moreover, BitCast cannot convert byte types to
+    // non-byte types, dedicating it to ByteCast instead.
+    if (!SrcPtrTy) {
+      if (SrcTy->isByteOrByteVectorTy() && !DstTy->isByteOrByteVectorTy())
+        return false;
       return SrcTy->getPrimitiveSizeInBits() == DstTy->getPrimitiveSizeInBits();
+    }
 
     // If both are pointers then the address spaces must match.
     if (SrcPtrTy->getAddressSpace() != DstPtrTy->getAddressSpace())

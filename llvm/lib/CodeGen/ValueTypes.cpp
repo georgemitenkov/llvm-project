@@ -524,6 +524,8 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
     llvm_unreachable("Unknown type!");
   case Type::VoidTyID:
     return MVT::isVoid;
+  case Type::ByteTyID:
+    return getIntegerVT(cast<ByteType>(Ty)->getBitWidth());
   case Type::IntegerTyID:
     return getIntegerVT(cast<IntegerType>(Ty)->getBitWidth());
   case Type::HalfTyID:      return MVT(MVT::f16);
@@ -553,6 +555,8 @@ EVT EVT::getEVT(Type *Ty, bool HandleUnknown){
   switch (Ty->getTypeID()) {
   default:
     return MVT::getVT(Ty, HandleUnknown);
+  case Type::ByteTyID:
+    return getIntegerVT(Ty->getContext(), cast<ByteType>(Ty)->getBitWidth());
   case Type::IntegerTyID:
     return getIntegerVT(Ty->getContext(), cast<IntegerType>(Ty)->getBitWidth());
   case Type::FixedVectorTyID:

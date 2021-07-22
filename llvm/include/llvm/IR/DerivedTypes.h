@@ -45,6 +45,11 @@ protected:
     setSubclassData(NumBits);
   }
 
+  IntegerType(LLVMContext &C, unsigned NumBits, Type::TypeID TID)
+      : Type(C, TID) {
+    setSubclassData(NumBits);
+  }
+
 public:
   /// This enum is just used to hold constants we need for IntegerType.
   enum {
@@ -95,6 +100,34 @@ public:
 
 unsigned Type::getIntegerBitWidth() const {
   return cast<IntegerType>(this)->getBitWidth();
+}
+
+/// Class to represent byte types. Note that this class is also used to
+/// represent the built-in byte types: Byte1Ty, Byte8Ty, Byte16Ty, Byte32Ty and
+/// Byte64Ty.
+class ByteType : public IntegerType {
+  friend class LLVMContextImpl;
+
+protected:
+  explicit ByteType(LLVMContext &C, unsigned NumBits)
+      : IntegerType(C, NumBits, Type::ByteTyID) {}
+
+public:
+  /// This static method is the primary way of constructing a ByteType and is
+  /// implemented similarly to the `get` method of IntegerType.
+  static ByteType *get(LLVMContext &C, unsigned NumBits);
+
+  /// Get the number of bits in this ByteType.
+  unsigned getBitWidth() const { return getSubclassData(); }
+
+  /// Methods for support type inquiry through isa, cast, and dyn_cast.
+  static bool classof(const Type *T) {
+    return T->getTypeID() == Type::ByteTyID;
+  }
+};
+
+unsigned Type::getByteBitWidth() const {
+  return cast<ByteType>(this)->getBitWidth();
 }
 
 /// Class to represent function types

@@ -2772,7 +2772,8 @@ void Verifier::visitTruncInst(TruncInst &I) {
   unsigned DestBitSize = DestTy->getScalarSizeInBits();
 
   Assert(SrcTy->isIntOrIntVectorTy(), "Trunc only operates on integer", &I);
-  Assert(DestTy->isIntOrIntVectorTy(), "Trunc only produces integer", &I);
+  Assert(DestTy->isIntOrIntVectorTy() || DestTy->isByteOrByteVectorTy(),
+         "Trunc only produces an integer or a byte", &I);
   Assert(SrcTy->isVectorTy() == DestTy->isVectorTy(),
          "trunc source and destination must both be a vector or neither", &I);
   Assert(SrcBitSize > DestBitSize, "DestTy too big for Trunc", &I);
@@ -2787,7 +2788,8 @@ void Verifier::visitZExtInst(ZExtInst &I) {
 
   // Get the size of the types in bits, we'll need this later
   Assert(SrcTy->isIntOrIntVectorTy(), "ZExt only operates on integer", &I);
-  Assert(DestTy->isIntOrIntVectorTy(), "ZExt only produces an integer", &I);
+  Assert(DestTy->isIntOrIntVectorTy() || DestTy->isByteOrByteVectorTy(),
+         "ZExt only produces an integer or a byte", &I);
   Assert(SrcTy->isVectorTy() == DestTy->isVectorTy(),
          "zext source and destination must both be a vector or neither", &I);
   unsigned SrcBitSize = SrcTy->getScalarSizeInBits();
@@ -2808,7 +2810,8 @@ void Verifier::visitSExtInst(SExtInst &I) {
   unsigned DestBitSize = DestTy->getScalarSizeInBits();
 
   Assert(SrcTy->isIntOrIntVectorTy(), "SExt only operates on integer", &I);
-  Assert(DestTy->isIntOrIntVectorTy(), "SExt only produces an integer", &I);
+  Assert(DestTy->isIntOrIntVectorTy() || DestTy->isByteOrByteVectorTy(),
+         "SExt only produces an integer or a byte", &I);
   Assert(SrcTy->isVectorTy() == DestTy->isVectorTy(),
          "sext source and destination must both be a vector or neither", &I);
   Assert(SrcBitSize < DestBitSize, "Type too small for SExt", &I);

@@ -499,6 +499,9 @@ public:
   // Type creation methods
   //===--------------------------------------------------------------------===//
 
+  /// Fetch the type representing an 8-bit byte.
+  ByteType *getByte8Ty() { return Type::getByte8Ty(Context); }
+
   /// Fetch the type representing a single bit
   IntegerType *getInt1Ty() {
     return Type::getInt1Ty(Context);
@@ -555,6 +558,11 @@ public:
   /// Fetch the type representing void.
   Type *getVoidTy() {
     return Type::getVoidTy(Context);
+  }
+
+  /// Fetch the type representing a pointer to an 8-bit byte value.
+  PointerType *getByte8PtrTy(unsigned AddrSpace = 0) {
+    return Type::getInt8PtrTy(Context, AddrSpace);
   }
 
   /// Fetch the type representing a pointer to an 8-bit integer value.
@@ -2031,8 +2039,8 @@ public:
   Value *CreateZExtOrTrunc(Value *V, Type *DestTy,
                            const Twine &Name = "") {
     assert(V->getType()->isIntOrIntVectorTy() &&
-           DestTy->isIntOrIntVectorTy() &&
-           "Can only zero extend/truncate integers!");
+           (DestTy->isIntOrIntVectorTy() || DestTy->isByteOrByteVectorTy()) &&
+           "Can only zero extend/truncate from integers to integers/bytes!");
     Type *VTy = V->getType();
     if (VTy->getScalarSizeInBits() < DestTy->getScalarSizeInBits())
       return CreateZExt(V, DestTy, Name);
@@ -2046,8 +2054,8 @@ public:
   Value *CreateSExtOrTrunc(Value *V, Type *DestTy,
                            const Twine &Name = "") {
     assert(V->getType()->isIntOrIntVectorTy() &&
-           DestTy->isIntOrIntVectorTy() &&
-           "Can only sign extend/truncate integers!");
+           (DestTy->isIntOrIntVectorTy() || DestTy->isByteOrByteVectorTy()) &&
+           "Can only sign extend/truncate from integers to integers/bytes!");
     Type *VTy = V->getType();
     if (VTy->getScalarSizeInBits() < DestTy->getScalarSizeInBits())
       return CreateSExt(V, DestTy, Name);

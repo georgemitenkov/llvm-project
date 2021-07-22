@@ -56,6 +56,10 @@ Type *Type::getPrimitiveType(LLVMContext &C, TypeID IDNumber) {
   }
 }
 
+bool Type::isByteTy(unsigned BitWidth) const {
+  return isByteTy() && cast<ByteType>(this)->getBitWidth() == BitWidth;
+}
+
 bool Type::isIntegerTy(unsigned Bitwidth) const {
   return isIntegerTy() && cast<IntegerType>(this)->getBitWidth() == Bitwidth;
 }
@@ -136,6 +140,8 @@ TypeSize Type::getPrimitiveSizeInBits() const {
   case Type::PPC_FP128TyID: return TypeSize::Fixed(128);
   case Type::X86_MMXTyID: return TypeSize::Fixed(64);
   case Type::X86_AMXTyID: return TypeSize::Fixed(8192);
+  case Type::ByteTyID:
+    return TypeSize::Fixed(getByteBitWidth());
   case Type::IntegerTyID:
     return TypeSize::Fixed(cast<IntegerType>(this)->getBitWidth());
   case Type::FixedVectorTyID:
@@ -197,6 +203,17 @@ Type *Type::getPPC_FP128Ty(LLVMContext &C) { return &C.pImpl->PPC_FP128Ty; }
 Type *Type::getX86_MMXTy(LLVMContext &C) { return &C.pImpl->X86_MMXTy; }
 Type *Type::getX86_AMXTy(LLVMContext &C) { return &C.pImpl->X86_AMXTy; }
 
+ByteType *Type::getByte1Ty(LLVMContext &C) { return &C.pImpl->Byte1Ty; }
+ByteType *Type::getByte8Ty(LLVMContext &C) { return &C.pImpl->Byte8Ty; }
+ByteType *Type::getByte16Ty(LLVMContext &C) { return &C.pImpl->Byte16Ty; }
+ByteType *Type::getByte32Ty(LLVMContext &C) { return &C.pImpl->Byte32Ty; }
+ByteType *Type::getByte64Ty(LLVMContext &C) { return &C.pImpl->Byte64Ty; }
+ByteType *Type::getByte128Ty(LLVMContext &C) { return &C.pImpl->Byte128Ty; }
+
+ByteType *Type::getByteNTy(LLVMContext &C, unsigned N) {
+  return ByteType::get(C, N);
+}
+
 IntegerType *Type::getInt1Ty(LLVMContext &C) { return &C.pImpl->Int1Ty; }
 IntegerType *Type::getInt8Ty(LLVMContext &C) { return &C.pImpl->Int8Ty; }
 IntegerType *Type::getInt16Ty(LLVMContext &C) { return &C.pImpl->Int16Ty; }
@@ -244,6 +261,10 @@ PointerType *Type::getX86_AMXPtrTy(LLVMContext &C, unsigned AS) {
   return getX86_AMXTy(C)->getPointerTo(AS);
 }
 
+PointerType *Type::getByte8PtrTy(LLVMContext &C, unsigned AS) {
+  return getByte8Ty(C)->getPointerTo(AS);
+}
+
 PointerType *Type::getIntNPtrTy(LLVMContext &C, unsigned N, unsigned AS) {
   return getIntNTy(C, N)->getPointerTo(AS);
 }
@@ -266,6 +287,40 @@ PointerType *Type::getInt32PtrTy(LLVMContext &C, unsigned AS) {
 
 PointerType *Type::getInt64PtrTy(LLVMContext &C, unsigned AS) {
   return getInt64Ty(C)->getPointerTo(AS);
+}
+
+//===----------------------------------------------------------------------===//
+//                       ByteType Implementation
+//===----------------------------------------------------------------------===//
+
+ByteType *ByteType::get(LLVMContext &C, unsigned NumBits) {
+  assert(NumBits >= MIN_INT_BITS && "bitwidth too small");
+  assert(NumBits <= MAX_INT_BITS && "bitwidth too large");
+
+  // Check for the built-in integer types
+  switch (NumBits) {
+  case 1:
+    return cast<ByteType>(Type::getByte1Ty(C));
+  case 8:
+    return cast<ByteType>(Type::getByte8Ty(C));
+  case 16:
+    return cast<ByteType>(Type::getByte16Ty(C));
+  case 32:
+    return cast<ByteType>(Type::getByte32Ty(C));
+  case 64:
+    return cast<ByteType>(Type::getByte64Ty(C));
+  case 128:
+    return cast<ByteType>(Type::getByte128Ty(C));
+  default:
+    break;
+  }
+
+  ByteType *&Entry = C.pImpl->ByteTypes[NumBits];
+
+  if (!Entry)
+    Entry = new (C.pImpl->Alloc) ByteType(C, NumBits);
+
+  return Entry;
 }
 
 //===----------------------------------------------------------------------===//
@@ -640,7 +695,7 @@ VectorType *VectorType::get(Type *ElementType, ElementCount EC) {
 
 bool VectorType::isValidElementType(Type *ElemTy) {
   return ElemTy->isIntegerTy() || ElemTy->isFloatingPointTy() ||
-         ElemTy->isPointerTy();
+         ElemTy->isPointerTy() || ElemTy->isByteTy();
 }
 
 //===----------------------------------------------------------------------===//
