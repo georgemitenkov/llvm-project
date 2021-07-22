@@ -546,6 +546,9 @@ void TypePrinting::print(Type *Ty, raw_ostream &OS) {
   case Type::X86_MMXTyID:   OS << "x86_mmx"; return;
   case Type::X86_AMXTyID:   OS << "x86_amx"; return;
   case Type::TokenTyID:     OS << "token"; return;
+  case Type::ByteTyID:
+    OS << 'b' << Ty->getByteBitWidth();
+    return;
   case Type::IntegerTyID:
     OS << 'i' << cast<IntegerType>(Ty)->getBitWidth();
     return;

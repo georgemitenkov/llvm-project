@@ -512,6 +512,8 @@ LLVMTypeKind LLVMGetTypeKind(LLVMTypeRef Ty) {
     return LLVMLabelTypeKind;
   case Type::MetadataTyID:
     return LLVMMetadataTypeKind;
+  case Type::ByteTyID:
+    return LLVMByteTypeKind;
   case Type::IntegerTyID:
     return LLVMIntegerTypeKind;
   case Type::FunctionTyID:
@@ -561,6 +563,56 @@ char *LLVMPrintTypeToString(LLVMTypeRef Ty) {
   os.flush();
 
   return strdup(buf.c_str());
+}
+
+/*--.. Operations on byte types ............................................--*/
+
+LLVMTypeRef LLVMByte1TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte1Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByte8TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte8Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByte16TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte16Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByte32TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte32Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByte64TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte64Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByte128TypeInContext(LLVMContextRef C) {
+  return (LLVMTypeRef)Type::getByte128Ty(*unwrap(C));
+}
+LLVMTypeRef LLVMByteTypeInContext(LLVMContextRef C, unsigned NumBits) {
+  return wrap(ByteType::get(*unwrap(C), NumBits));
+}
+
+LLVMTypeRef LLVMByte1Type(void) {
+  return LLVMByte1TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByte8Type(void) {
+  return LLVMByte8TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByte16Type(void) {
+  return LLVMByte16TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByte32Type(void) {
+  return LLVMByte32TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByte64Type(void) {
+  return LLVMByte64TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByte128Type(void) {
+  return LLVMByte128TypeInContext(LLVMGetGlobalContext());
+}
+LLVMTypeRef LLVMByteType(unsigned NumBits) {
+  return LLVMByteTypeInContext(LLVMGetGlobalContext(), NumBits);
+}
+
+unsigned LLVMGetByteTypeWidth(LLVMTypeRef ByteTy) {
+  return unwrap<ByteType>(ByteTy)->getBitWidth();
 }
 
 /*--.. Operations on integer types .........................................--*/

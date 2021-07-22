@@ -1885,8 +1885,8 @@ bool AttrBuilder::operator==(const AttrBuilder &B) const {
 AttrBuilder AttributeFuncs::typeIncompatible(Type *Ty) {
   AttrBuilder Incompatible;
 
-  if (!Ty->isIntegerTy())
-    // Attribute that only apply to integers.
+  if (!Ty->isIntegerTy() && !Ty->isByteTy())
+    // Attribute that only apply to integers and bytes.
     Incompatible.addAttribute(Attribute::SExt)
       .addAttribute(Attribute::ZExt);
 

@@ -3220,6 +3220,9 @@ bool CastInst::isBitCastable(Type *SrcTy, Type *DestTy) {
   if (DestTy->isX86_MMXTy() || SrcTy->isX86_MMXTy())
     return false;
 
+  if (SrcTy->isByteOrByteVectorTy() && !DestTy->isByteOrByteVectorTy())
+    return false;
+
   return true;
 }
 
@@ -3270,7 +3273,13 @@ CastInst::getCastOpcode(
   unsigned DestBits = DestTy->getPrimitiveSizeInBits(); // 0 for ptr
 
   // Run through the possibilities ...
-  if (DestTy->isIntegerTy()) {                      // Casting to integral
+  if (DestTy->isByteTy()) {                         // Casting to byte
+    if (SrcTy->isIntegerTy()) {                     // Casting from integral
+      assert(DestBits == SrcBits && "Illegal cast from byte type");
+      return BitCast;
+    }
+    llvm_unreachable("Illegal cast to byte type");
+  } else if (DestTy->isIntegerTy()) {               // Casting to integral
     if (SrcTy->isIntegerTy()) {                     // Casting from integral
       if (DestBits < SrcBits)
         return Trunc;                               // int -> smaller int
@@ -3411,10 +3420,19 @@ CastInst::castIsValid(Instruction::CastOps op, Type *SrcTy, Type *DstTy) {
     if (!SrcPtrTy != !DstPtrTy)
       return false;
 
+    // BitCast cannot convert byte types to non-byte types.
+    if (!SrcPtrTy && SrcTy->isByteOrByteVectorTy() &&
+        !DstTy->isByteOrByteVectorTy())
+      return false;
+
     // For non-pointer cases, the cast is okay if the source and destination bit
-    // widths are identical.
-    if (!SrcPtrTy)
+    // widths are identical. Moreover, BitCast cannot convert byte types to
+    // non-byte types, dedicating it to ByteCast instead.
+    if (!SrcPtrTy) {
+      if (SrcTy->isByteOrByteVectorTy() && !DstTy->isByteOrByteVectorTy())
+        return false;
       return SrcTy->getPrimitiveSizeInBits() == DstTy->getPrimitiveSizeInBits();
+    }
 
     // If both are pointers then the address spaces must match.
     if (SrcPtrTy->getAddressSpace() != DstPtrTy->getAddressSpace())

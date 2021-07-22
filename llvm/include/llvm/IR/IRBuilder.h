@@ -499,6 +499,9 @@ public:
   // Type creation methods
   //===--------------------------------------------------------------------===//
 
+  /// Fetch the type representing an 8-bit byte.
+  ByteType *getByte8Ty() { return Type::getByte8Ty(Context); }
+
   /// Fetch the type representing a single bit
   IntegerType *getInt1Ty() {
     return Type::getInt1Ty(Context);
@@ -555,6 +558,11 @@ public:
   /// Fetch the type representing void.
   Type *getVoidTy() {
     return Type::getVoidTy(Context);
+  }
+
+  /// Fetch the type representing a pointer to an 8-bit byte value.
+  PointerType *getByte8PtrTy(unsigned AddrSpace = 0) {
+    return Type::getByte8PtrTy(Context, AddrSpace);
   }
 
   /// Fetch the type representing a pointer to an 8-bit integer value.

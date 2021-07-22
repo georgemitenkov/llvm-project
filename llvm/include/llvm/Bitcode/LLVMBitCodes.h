@@ -172,6 +172,8 @@ enum TypeCodes {
   TYPE_CODE_X86_AMX = 24, // X86 AMX
 
   TYPE_CODE_OPAQUE_POINTER = 25, // OPAQUE_POINTER: [addrspace]
+
+  TYPE_CODE_BYTE = 26, // BYTE: [width]
 };
 
 enum OperandBundleTagCode {

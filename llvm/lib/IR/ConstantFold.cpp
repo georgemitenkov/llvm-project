@@ -548,6 +548,11 @@ Constant *llvm::ConstantFoldCastInstruction(unsigned opc, Constant *V,
   if (isa<PoisonValue>(V))
     return PoisonValue::get(DestTy);
 
+  // Since byte constants do not exist, we cannot fold BitCasts to bytes. If
+  // this is the case, return immediately.
+  if (DestTy->isByteOrByteVectorTy())
+    return nullptr;
+
   if (isa<UndefValue>(V)) {
     // zext(undef) = 0, because the top bits will be zero.
     // sext(undef) = 0, because the top bits will all be the same.
