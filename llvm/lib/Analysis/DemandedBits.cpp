@@ -350,7 +350,7 @@ void DemandedBits::performAnalysis() {
     // add their operands to the work list (for integer values operands, mark
     // all bits as live).
     Type *T = I.getType();
-    if (T->isIntOrIntVectorTy()) {
+    if (T->isIntOrIntVectorTy() || T->isByteOrByteVectorTy()) {
       if (AliveBits.try_emplace(&I, T->getScalarSizeInBits(), 0).second)
         Worklist.insert(&I);
 
@@ -361,7 +361,7 @@ void DemandedBits::performAnalysis() {
     for (Use &OI : I.operands()) {
       if (Instruction *J = dyn_cast<Instruction>(OI)) {
         Type *T = J->getType();
-        if (T->isIntOrIntVectorTy())
+        if (T->isIntOrIntVectorTy() || T->isByteOrByteVectorTy())
           AliveBits[J] = APInt::getAllOnesValue(T->getScalarSizeInBits());
         else
           Visited.insert(J);
@@ -381,7 +381,7 @@ void DemandedBits::performAnalysis() {
     LLVM_DEBUG(dbgs() << "DemandedBits: Visiting: " << *UserI);
     APInt AOut;
     bool InputIsKnownDead = false;
-    if (UserI->getType()->isIntOrIntVectorTy()) {
+    if (UserI->getType()->isIntOrIntVectorTy() || UserI->getType()->isByteOrByteVectorTy()) {
       AOut = AliveBits[UserI];
       LLVM_DEBUG(dbgs() << " Alive Out: 0x"
                         << Twine::utohexstr(AOut.getLimitedValue()));
@@ -405,7 +405,7 @@ void DemandedBits::performAnalysis() {
         continue;
 
       Type *T = OI->getType();
-      if (T->isIntOrIntVectorTy()) {
+      if (T->isIntOrIntVectorTy() || T->isByteOrByteVectorTy()) {
         unsigned BitWidth = T->getScalarSizeInBits();
         APInt AB = APInt::getAllOnesValue(BitWidth);
         if (InputIsKnownDead) {
