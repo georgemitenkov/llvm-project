@@ -1423,7 +1423,8 @@ Constant *llvm::ConstantFoldCastOperand(unsigned Opcode, Constant *C,
   case Instruction::FPToUI:
   case Instruction::FPToSI:
   case Instruction::AddrSpaceCast:
-      return ConstantExpr::getCast(Opcode, C, DestTy);
+  case Instruction::ByteCast:
+    return ConstantExpr::getCast(Opcode, C, DestTy);
   case Instruction::BitCast:
     return FoldBitCast(C, DestTy, DL);
   }

@@ -65,9 +65,42 @@ define void @bitcast_to_byte(i8 %i) {
     ret void
 }
 
+; CHECK-LABEL: bitcasts
+;       CHECK: bitcast i64 %{{.*}} to b64
+;       CHECK: bitcast b64 %{{.*}} to <8 x b8>
+;       CHECK: bitcast <8 x b8> %{{.*}} to <2 x b32>
+;       CHECK: bitcast <2 x b32> %{{.*}} to b64
+;       CHECK: bitcast i32* %{{.*}} to b8*
+;       CHECK: bitcast b8* %{{.*}} to i64*
+define void @bitcasts(i64 %i, b64 %s, i32* %ptr) {
+  %s_to_s = bitcast i64 %i to b64
+  %s_to_v = bitcast b64 %s to <8 x b8>
+  %v_to_v = bitcast <8 x b8> %s_to_v to <2 x b32>
+  %v_to_s = bitcast <2 x b32> %v_to_v to b64
+  %b_ptr = bitcast i32* %ptr to b8*
+  %i_ptr = bitcast b8* %b_ptr to i64*
+  ret void
+}
+
 ; CHECK-LABEL: byte_constant
 ;       CHECK: store b8 bitcast (i8 0 to b8), b8* %{{.*}}
 define void @byte_constant(b8* %ptr) {
     store b8 bitcast (i8 0 to b8), b8* %ptr, align 1
     ret void
+}
+
+; CHECK-LABEL: bytecast_to_int
+;       CHECK: bytecast b8 %{{.*}} to i8
+;       CHECK: bytecast <4 x b8> %{{.*}} to <4 x i8>
+define void @bytecast_to_int(b8 %byte, <4 x b8> %word) {
+  %a = bytecast b8 %byte to i8
+  %c = bytecast <4 x b8> %word to <4 x i8>
+  ret void
+}
+
+; CHECK-LABEL: bytecast_to_ptr
+;       CHECK: bytecast b64 %{{.*}} to i32*
+define void @bytecast_to_ptr(b64 %byte) {
+  %b = bytecast b64 %byte to i32*
+  ret void
 }
