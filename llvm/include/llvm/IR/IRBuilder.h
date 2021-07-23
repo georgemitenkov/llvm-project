@@ -2128,6 +2128,16 @@ public:
     return CreateCast(Instruction::AddrSpaceCast, V, DestTy, Name);
   }
 
+  Value *CreateByteCast(Value *V, Type *DestTy, const Twine &Name = "") {
+    return CreateCast(Instruction::ByteCast, V, DestTy, Name);
+  }
+
+  /// ByteCasts the value to integral value of the same width.
+  Value *CreateByteCast(Value *V, const Twine &Name = "") {
+    Type *DestTy = getIntNTy(V->getType()->getByteBitWidth());
+    return CreateCast(Instruction::ByteCast, V, DestTy, Name);
+  }
+
   Value *CreateZExtOrBitCast(Value *V, Type *DestTy,
                              const Twine &Name = "") {
     if (V->getType() == DestTy)

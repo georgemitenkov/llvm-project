@@ -3518,6 +3518,11 @@ void SelectionDAGBuilder::visitAddrSpaceCast(const User &I) {
   setValue(&I, N);
 }
 
+void SelectionDAGBuilder::visitByteCast(const User &I) {
+  SDValue N = getValue(I.getOperand(0));
+  setValue(&I, N); // noop cast.
+}
+
 void SelectionDAGBuilder::visitInsertElement(const User &I) {
   const TargetLowering &TLI = DAG.getTargetLoweringInfo();
   SDValue InVec = getValue(I.getOperand(0));

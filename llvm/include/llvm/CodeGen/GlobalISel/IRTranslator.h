@@ -533,6 +533,9 @@ private:
   bool translateAddrSpaceCast(const User &U, MachineIRBuilder &MIRBuilder) {
     return translateCast(TargetOpcode::G_ADDRSPACE_CAST, U, MIRBuilder);
   }
+  bool translateByteCast(const User &U, MachineIRBuilder &MIRBuilder) {
+    return false;
+  }
   bool translateCleanupPad(const User &U, MachineIRBuilder &MIRBuilder) {
     return false;
   }

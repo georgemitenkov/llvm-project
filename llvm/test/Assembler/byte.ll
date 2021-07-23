@@ -60,3 +60,19 @@ define void @byte_constant(b8* %ptr) {
     store b8 bitcast (i8 0 to b8), b8* %ptr, align 1
     ret void
 }
+
+; CHECK-LABEL: bytecast_to_int
+;       CHECK: bytecast b8 %{{.*}} to i8
+;       CHECK: bytecast <4 x b8> %{{.*}} to <4 x i8>
+define void @bytecast_to_int(b8 %byte, <4 x b8> %word) {
+  %a = bytecast b8 %byte to i8
+  %c = bytecast <4 x b8> %word to <4 x i8>
+  ret void
+}
+
+; CHECK-LABEL: bytecast_to_ptr
+;       CHECK: bytecast b64 %{{.*}} to i32*
+define void @bytecast_to_ptr(b64 %byte) {
+  %b = bytecast b64 %byte to i32*
+  ret void
+}

@@ -1021,6 +1021,8 @@ public:
                               bool OnlyIfReduced = false);
   static Constant *getAddrSpaceCast(Constant *C, Type *Ty,
                                     bool OnlyIfReduced = false);
+  static Constant *getByteCast(Constant *C, Type *Ty,
+                               bool OnlyIfReduced = false);
 
   static Constant *getNSWNeg(Constant *C) { return getNeg(C, false, true); }
   static Constant *getNUWNeg(Constant *C) { return getNeg(C, true, false); }

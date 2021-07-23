@@ -5964,6 +5964,7 @@ int LLParser::parseInstruction(Instruction *&Inst, BasicBlock *BB,
   case lltok::kw_fpext:
   case lltok::kw_bitcast:
   case lltok::kw_addrspacecast:
+  case lltok::kw_bytecast:
   case lltok::kw_uitofp:
   case lltok::kw_sitofp:
   case lltok::kw_fptoui:

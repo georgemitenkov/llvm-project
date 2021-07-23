@@ -7,5 +7,6 @@ define void @foo(b8 %a, b16 %b, b64 %c) {
   store b16 %b, b16* %1, align 2
   %2 = load b16, b16* %1, align 2
   %3 = bitcast b16 %2 to <2 x b8>
+  %4 = bytecast <2 x b8> %3 to <2 x i8>
   ret void
 }

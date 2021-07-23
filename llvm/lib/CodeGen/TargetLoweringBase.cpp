@@ -1815,6 +1815,7 @@ int TargetLoweringBase::InstructionOpcodeToISD(unsigned Opcode) const {
   case PtrToInt:       return ISD::BITCAST;
   case IntToPtr:       return ISD::BITCAST;
   case BitCast:        return ISD::BITCAST;
+  case ByteCast:       return 0;
   case AddrSpaceCast:  return ISD::ADDRSPACECAST;
   case ICmp:           return ISD::SETCC;
   case FCmp:           return ISD::SETCC;
