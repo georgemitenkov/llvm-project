@@ -2078,7 +2078,8 @@ Constant *ConstantExpr::getPointerBitCastOrAddrSpaceCast(Constant *S,
 
 Constant *ConstantExpr::getIntegerCast(Constant *C, Type *Ty, bool isSigned) {
   assert(C->getType()->isIntOrIntVectorTy() &&
-         Ty->isIntOrIntVectorTy() && "Invalid cast");
+         (Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
+         "Invalid cast");
   unsigned SrcBits = C->getType()->getScalarSizeInBits();
   unsigned DstBits = Ty->getScalarSizeInBits();
   Instruction::CastOps opcode =
@@ -2107,7 +2108,8 @@ Constant *ConstantExpr::getTrunc(Constant *C, Type *Ty, bool OnlyIfReduced) {
 #endif
   assert((fromVec == toVec) && "Cannot convert from scalar to/from vector");
   assert(C->getType()->isIntOrIntVectorTy() && "Trunc operand must be integer");
-  assert(Ty->isIntOrIntVectorTy() && "Trunc produces only integral");
+  assert((Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
+         "Trunc produces only integer or a byte");
   assert(C->getType()->getScalarSizeInBits() > Ty->getScalarSizeInBits()&&
          "SrcTy must be larger than DestTy for Trunc!");
 
@@ -2121,7 +2123,8 @@ Constant *ConstantExpr::getSExt(Constant *C, Type *Ty, bool OnlyIfReduced) {
 #endif
   assert((fromVec == toVec) && "Cannot convert from scalar to/from vector");
   assert(C->getType()->isIntOrIntVectorTy() && "SExt operand must be integral");
-  assert(Ty->isIntOrIntVectorTy() && "SExt produces only integer");
+  assert((Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
+         "SExt produces only integer or a byte");
   assert(C->getType()->getScalarSizeInBits() < Ty->getScalarSizeInBits()&&
          "SrcTy must be smaller than DestTy for SExt!");
 
@@ -2135,7 +2138,8 @@ Constant *ConstantExpr::getZExt(Constant *C, Type *Ty, bool OnlyIfReduced) {
 #endif
   assert((fromVec == toVec) && "Cannot convert from scalar to/from vector");
   assert(C->getType()->isIntOrIntVectorTy() && "ZEXt operand must be integral");
-  assert(Ty->isIntOrIntVectorTy() && "ZExt produces only integer");
+  assert((Ty->isIntOrIntVectorTy() || Ty->isByteOrByteVectorTy()) &&
+         "ZExt produces only integer or a byte");
   assert(C->getType()->getScalarSizeInBits() < Ty->getScalarSizeInBits()&&
          "SrcTy must be smaller than DestTy for ZExt!");
 
@@ -2930,7 +2934,8 @@ StringRef ConstantDataSequential::getRawDataValues() const {
 }
 
 bool ConstantDataSequential::isElementTypeCompatible(Type *Ty) {
-  if (Ty->isHalfTy() || Ty->isBFloatTy() || Ty->isFloatTy() || Ty->isDoubleTy())
+  if (Ty->isHalfTy() || Ty->isBFloatTy() || Ty->isFloatTy() ||
+      Ty->isDoubleTy() || Ty->isByteTy(8))
     return true;
   if (auto *IT = dyn_cast<IntegerType>(Ty)) {
     switch (IT->getBitWidth()) {
@@ -3080,15 +3085,16 @@ Constant *ConstantDataArray::getFP(Type *ElementType, ArrayRef<uint64_t> Elts) {
 
 Constant *ConstantDataArray::getString(LLVMContext &Context,
                                        StringRef Str, bool AddNull) {
-  if (!AddNull) {
-    const uint8_t *Data = Str.bytes_begin();
-    return get(Context, makeArrayRef(Data, Str.size()));
-  }
+  if (!AddNull)
+    return getRaw(Str, Str.size(), Type::getByte8Ty(Context));
 
   SmallVector<uint8_t, 64> ElementVals;
   ElementVals.append(Str.begin(), Str.end());
   ElementVals.push_back(0);
-  return get(Context, ElementVals);
+  size_t Size = ElementVals.size();
+  const char *Data = reinterpret_cast<const char *>(ElementVals.data());
+  return getRaw(StringRef(Data, Size * sizeof(uint8_t)), Size,
+                Type::getByte8Ty(Context));
 }
 
 /// get() constructors - Return a constant with vector type with an element
@@ -3203,13 +3209,14 @@ Constant *ConstantDataVector::getSplat(unsigned NumElts, Constant *V) {
 
 
 uint64_t ConstantDataSequential::getElementAsInteger(unsigned Elt) const {
-  assert(isa<IntegerType>(getElementType()) &&
-         "Accessor can only be used when element is an integer");
+  assert(
+      (isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
+      "Accessor can only be used when element is an integer or a byte");
   const char *EltPtr = getElementPointer(Elt);
 
   // The data is stored in host byte order, make sure to cast back to the right
   // type to load with the right endianness.
-  switch (getElementType()->getIntegerBitWidth()) {
+  switch (getElementType()->getScalarSizeInBits()) {
   default: llvm_unreachable("Invalid bitwidth for CDS");
   case 8:
     return *reinterpret_cast<const uint8_t *>(EltPtr);
@@ -3223,13 +3230,14 @@ uint64_t ConstantDataSequential::getElementAsInteger(unsigned Elt) const {
 }
 
 APInt ConstantDataSequential::getElementAsAPInt(unsigned Elt) const {
-  assert(isa<IntegerType>(getElementType()) &&
-         "Accessor can only be used when element is an integer");
+  assert(
+      (isa<IntegerType>(getElementType()) || isa<ByteType>(getElementType())) &&
+      "Accessor can only be used when element is an integer or a byte");
   const char *EltPtr = getElementPointer(Elt);
 
   // The data is stored in host byte order, make sure to cast back to the right
   // type to load with the right endianness.
-  switch (getElementType()->getIntegerBitWidth()) {
+  switch (getElementType()->getScalarSizeInBits()) {
   default: llvm_unreachable("Invalid bitwidth for CDS");
   case 8: {
     auto EltVal = *reinterpret_cast<const uint8_t *>(EltPtr);
@@ -3292,11 +3300,22 @@ Constant *ConstantDataSequential::getElementAsConstant(unsigned Elt) const {
       getElementType()->isFloatTy() || getElementType()->isDoubleTy())
     return ConstantFP::get(getContext(), getElementAsAPFloat(Elt));
 
+  // Since there are no byte constants, we need to create a bitcast contant
+  // expression.
+  if (getElementType()->isByteTy()) {
+    Type *IntTy = Type::getIntNTy(getElementType()->getContext(),
+                                  getElementType()->getByteBitWidth());
+    Constant *C = ConstantInt::get(IntTy, getElementAsInteger(Elt));
+    return ConstantExpr::getBitCast(C, getElementType());
+  }
+
   return ConstantInt::get(getElementType(), getElementAsInteger(Elt));
 }
 
 bool ConstantDataSequential::isString(unsigned CharSize) const {
-  return isa<ArrayType>(getType()) && getElementType()->isIntegerTy(CharSize);
+  return isa<ArrayType>(getType()) &&
+         (getElementType()->isIntegerTy(CharSize) ||
+          getElementType()->isByteTy(8));
 }
 
 bool ConstantDataSequential::isCString() const {
