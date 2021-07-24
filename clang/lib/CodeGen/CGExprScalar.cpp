@@ -886,6 +886,9 @@ Value *ScalarExprEmitter::EmitConversionToBool(Value *Src, QualType SrcType) {
   assert((SrcType->isIntegerType() || isa<llvm::PointerType>(Src->getType())) &&
          "Unknown scalar type to convert");
 
+  if (isa<llvm::ByteType>(Src->getType()))
+    Src = Builder.CreateByteCast(Src, "conv");
+
   if (isa<llvm::IntegerType>(Src->getType()))
     return EmitIntToBoolConversion(Src);
 
@@ -1220,14 +1223,33 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
     DstElementType = DstType;
   }
 
+  if (isa<llvm::ByteType>(SrcElementTy)) {
+    bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
+    llvm::Value *IntResult = Builder.CreateByteCast(Src, "conv");
+    if (DstTy->isIntegerTy())
+      return Builder.CreateIntCast(IntResult, DstTy, InputSigned, "conv");
+
+    assert(DstTy->isFloatingPointTy());
+    return InputSigned ? Builder.CreateSIToFP(IntResult, DstTy, "conv")
+                       : Builder.CreateUIToFP(IntResult, DstTy, "conv");
+  }
+
   if (isa<llvm::IntegerType>(SrcElementTy)) {
     bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
     if (SrcElementType->isBooleanType() && Opts.TreatBooleanAsSigned) {
       InputSigned = true;
     }
 
+    if (isa<llvm::ByteType>(DstElementTy)) {
+      llvm::Type *DstITy =
+          llvm::Type::getIntNTy(DstTy->getContext(), DstTy->getByteBitWidth());
+      return Builder.CreateBitCast(
+          Builder.CreateIntCast(Src, DstITy, InputSigned, "conv"), DstTy);
+    }
+
     if (isa<llvm::IntegerType>(DstElementTy))
       return Builder.CreateIntCast(Src, DstTy, InputSigned, "conv");
+
     if (InputSigned)
       return Builder.CreateSIToFP(Src, DstTy, "conv");
     return Builder.CreateUIToFP(Src, DstTy, "conv");
@@ -2574,8 +2596,13 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
       value = EmitOverflowCheckedBinOp(createBinOpInfoFromIncDec(
           E, value, isInc, E->getFPFeaturesInEffect(CGF.getLangOpts())));
     } else {
+      llvm::Type *OldTy = value->getType();
+      if (isa<llvm::ByteType>(OldTy))
+        value = Builder.CreateByteCast(value, "conv");
       llvm::Value *amt = llvm::ConstantInt::get(value->getType(), amount, true);
       value = Builder.CreateAdd(value, amt, isInc ? "inc" : "dec");
+      if (isa<llvm::ByteType>(OldTy))
+        value = Builder.CreateBitCast(value, OldTy, "conv");
     }
 
   // Next most common: pointer increment.

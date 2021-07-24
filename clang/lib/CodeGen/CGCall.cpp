@@ -2542,10 +2542,18 @@ static llvm::Value *emitArgumentDemotion(CodeGenFunction &CGF,
   // underlying type, like the enum promotions.
   if (value->getType() == varType) return value;
 
-  assert((varType->isIntegerTy() || varType->isFloatingPointTy())
-         && "unexpected promotion type");
+  assert((varType->isIntegerTy() || varType->isByteTy() ||
+          varType->isFloatingPointTy()) &&
+         "unexpected promotion type");
 
-  if (isa<llvm::IntegerType>(varType))
+  if (varType->isByteTy()) {
+    llvm::Type *intVarTy = llvm::Type::getIntNTy(varType->getContext(),
+                                                 varType->getByteBitWidth());
+    return CGF.Builder.CreateBitCast(
+        CGF.Builder.CreateTrunc(value, intVarTy, "arg.unpromote"), varType);
+  }
+
+  if (varType->isIntegerTy())
     return CGF.Builder.CreateTrunc(value, varType, "arg.unpromote");
 
   return CGF.Builder.CreateFPCast(value, varType, "arg.unpromote");

@@ -2040,8 +2040,17 @@ llvm::Constant *ConstantEmitter::tryEmitPrivate(const APValue &Value,
     return llvm::UndefValue::get(CGM.getTypes().ConvertType(DestType));
   case APValue::LValue:
     return ConstantLValueEmitter(*this, Value, DestType).tryEmit();
-  case APValue::Int:
+  case APValue::Int: {
+    // Check if the actual type of a constant is a byte type. In this case, we
+    // create a constant expression bitcast.
+    llvm::Type *DestTy = CGM.getTypes().ConvertType(DestType);
+    if (DestTy->isByteTy()) {
+      return llvm::ConstantExpr::getBitCast(
+          llvm::ConstantInt::get(CGM.getLLVMContext(), Value.getInt()), DestTy);
+    }
+
     return llvm::ConstantInt::get(CGM.getLLVMContext(), Value.getInt());
+  }
   case APValue::FixedPoint:
     return llvm::ConstantInt::get(CGM.getLLVMContext(),
                                   Value.getFixedPoint().getValue());
