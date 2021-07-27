@@ -965,12 +965,12 @@ static Value *optimizeMemCmpConstantSize(CallInst *CI, Value *LHS, Value *RHS,
 
   // memcmp(S1,S2,1) -> *(unsigned char*)LHS - *(unsigned char*)RHS
   if (Len == 1) {
-    Value *LHSV =
-        B.CreateZExt(B.CreateLoad(B.getInt8Ty(), castToI8Ptr(LHS, B), "lhsc"),
-                     CI->getType(), "lhsv");
-    Value *RHSV =
-        B.CreateZExt(B.CreateLoad(B.getInt8Ty(), castToI8Ptr(RHS, B), "rhsc"),
-                     CI->getType(), "rhsv");
+    Value *LHSV = B.CreateZExt(B.CreateByteCast(B.CreateLoad(
+                                   B.getByte8Ty(), castToCStr(LHS, B), "lhsc")),
+                               CI->getType(), "lhsv");
+    Value *RHSV = B.CreateZExt(B.CreateByteCast(B.CreateLoad(
+                                   B.getByte8Ty(), castToCStr(RHS, B), "rhsc")),
+                               CI->getType(), "rhsv");
     return B.CreateSub(LHSV, RHSV, "chardiff");
   }
 
@@ -978,19 +978,19 @@ static Value *optimizeMemCmpConstantSize(CallInst *CI, Value *LHS, Value *RHS,
   // TODO: The case where both inputs are constants does not need to be limited
   // to legal integers or equality comparison. See block below this.
   if (DL.isLegalInteger(Len * 8) && isOnlyUsedInZeroEqualityComparison(CI)) {
-    IntegerType *IntType = IntegerType::get(CI->getContext(), Len * 8);
-    unsigned PrefAlignment = DL.getPrefTypeAlignment(IntType);
+    ByteType *BTy = ByteType::get(CI->getContext(), Len * 8);
+    unsigned PrefAlignment = DL.getPrefTypeAlignment(BTy);
 
     // First, see if we can fold either argument to a constant.
     Value *LHSV = nullptr;
     if (auto *LHSC = dyn_cast<Constant>(LHS)) {
-      LHSC = ConstantExpr::getBitCast(LHSC, IntType->getPointerTo());
-      LHSV = ConstantFoldLoadFromConstPtr(LHSC, IntType, DL);
+      LHSC = ConstantExpr::getBitCast(LHSC, BTy->getPointerTo());
+      LHSV = ConstantFoldLoadFromConstPtr(LHSC, BTy, DL);
     }
     Value *RHSV = nullptr;
     if (auto *RHSC = dyn_cast<Constant>(RHS)) {
-      RHSC = ConstantExpr::getBitCast(RHSC, IntType->getPointerTo());
-      RHSV = ConstantFoldLoadFromConstPtr(RHSC, IntType, DL);
+      RHSC = ConstantExpr::getBitCast(RHSC, BTy->getPointerTo());
+      RHSV = ConstantFoldLoadFromConstPtr(RHSC, BTy, DL);
     }
 
     // Don't generate unaligned loads. If either source is constant data,
@@ -999,15 +999,19 @@ static Value *optimizeMemCmpConstantSize(CallInst *CI, Value *LHS, Value *RHS,
         (RHSV || getKnownAlignment(RHS, DL, CI) >= PrefAlignment)) {
       if (!LHSV) {
         Type *LHSPtrTy =
-            IntType->getPointerTo(LHS->getType()->getPointerAddressSpace());
-        LHSV = B.CreateLoad(IntType, B.CreateBitCast(LHS, LHSPtrTy), "lhsv");
+            BTy->getPointerTo(LHS->getType()->getPointerAddressSpace());
+        LHSV = B.CreateLoad(BTy, B.CreateBitCast(LHS, LHSPtrTy), "lhsv");
       }
       if (!RHSV) {
         Type *RHSPtrTy =
-            IntType->getPointerTo(RHS->getType()->getPointerAddressSpace());
-        RHSV = B.CreateLoad(IntType, B.CreateBitCast(RHS, RHSPtrTy), "rhsv");
+            BTy->getPointerTo(RHS->getType()->getPointerAddressSpace());
+        RHSV = B.CreateLoad(BTy, B.CreateBitCast(RHS, RHSPtrTy), "rhsv");
       }
-      return B.CreateZExt(B.CreateICmpNE(LHSV, RHSV), CI->getType(), "memcmp");
+
+      // For comparison, cast bytes to integers.
+      return B.CreateZExt(
+          B.CreateICmpNE(B.CreateByteCast(LHSV), B.CreateByteCast(RHSV)),
+          CI->getType(), "memcmp");
     }
   }
 

@@ -10,8 +10,10 @@ declare void @llvm.memcpy.p0i8.p0i8.i32(i8* nocapture, i8* nocapture, i32, i1) n
 
 define void @copy_1_byte(i8* %d, i8* %s) {
 ; CHECK-LABEL: @copy_1_byte(
-; CHECK-NEXT:    [[TMP1:%.*]] = load i8, i8* [[S:%.*]], align 1
-; CHECK-NEXT:    store i8 [[TMP1]], i8* [[D:%.*]], align 1
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to b8*
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to b8*
+; CHECK-NEXT:    [[TMP3:%.*]] = load b8, b8* [[TMP1]], align 1
+; CHECK-NEXT:    store b8 [[TMP3]], b8* [[TMP2]], align 1
 ; CHECK-NEXT:    ret void
 ;
   call void @llvm.memcpy.p0i8.p0i8.i32(i8* %d, i8* %s, i32 1, i1 false)
@@ -20,10 +22,10 @@ define void @copy_1_byte(i8* %d, i8* %s) {
 
 define void @copy_2_bytes(i8* %d, i8* %s) {
 ; CHECK-LABEL: @copy_2_bytes(
-; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to i16*
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to i16*
-; CHECK-NEXT:    [[TMP3:%.*]] = load i16, i16* [[TMP1]], align 1
-; CHECK-NEXT:    store i16 [[TMP3]], i16* [[TMP2]], align 1
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to b16*
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to b16*
+; CHECK-NEXT:    [[TMP3:%.*]] = load b16, b16* [[TMP1]], align 1
+; CHECK-NEXT:    store b16 [[TMP3]], b16* [[TMP2]], align 1
 ; CHECK-NEXT:    ret void
 ;
   call void @llvm.memcpy.p0i8.p0i8.i32(i8* %d, i8* %s, i32 2, i1 false)
@@ -43,10 +45,10 @@ define void @copy_3_bytes(i8* %d, i8* %s) {
 
 define void @copy_4_bytes(i8* %d, i8* %s) {
 ; CHECK-LABEL: @copy_4_bytes(
-; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to i32*
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to i32*
-; CHECK-NEXT:    [[TMP3:%.*]] = load i32, i32* [[TMP1]], align 1
-; CHECK-NEXT:    store i32 [[TMP3]], i32* [[TMP2]], align 1
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to b32*
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to b32*
+; CHECK-NEXT:    [[TMP3:%.*]] = load b32, b32* [[TMP1]], align 1
+; CHECK-NEXT:    store b32 [[TMP3]], b32* [[TMP2]], align 1
 ; CHECK-NEXT:    ret void
 ;
   call void @llvm.memcpy.p0i8.p0i8.i32(i8* %d, i8* %s, i32 4, i1 false)
@@ -66,10 +68,10 @@ define void @copy_5_bytes(i8* %d, i8* %s) {
 
 define void @copy_8_bytes(i8* %d, i8* %s) {
 ; CHECK-LABEL: @copy_8_bytes(
-; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to i64*
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to i64*
-; CHECK-NEXT:    [[TMP3:%.*]] = load i64, i64* [[TMP1]], align 1
-; CHECK-NEXT:    store i64 [[TMP3]], i64* [[TMP2]], align 1
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to b64*
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to b64*
+; CHECK-NEXT:    [[TMP3:%.*]] = load b64, b64* [[TMP1]], align 1
+; CHECK-NEXT:    store b64 [[TMP3]], b64* [[TMP2]], align 1
 ; CHECK-NEXT:    ret void
 ;
   call void @llvm.memcpy.p0i8.p0i8.i32(i8* %d, i8* %s, i32 8, i1 false)

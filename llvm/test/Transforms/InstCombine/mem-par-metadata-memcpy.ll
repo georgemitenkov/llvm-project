@@ -13,8 +13,8 @@
 ; }
 
 ; CHECK: for.body:
-; CHECK:  %{{.*}} = load i16, i16* %{{.*}}, align 1, !llvm.access.group !1
-; CHECK:  store i16 %{{.*}}, i16* %{{.*}}, align 1, !llvm.access.group !1
+; CHECK:  %{{.*}} = load b16, b16* %{{.*}}, align 1, !llvm.access.group !1
+; CHECK:  store b16 %{{.*}}, b16* %{{.*}}, align 1, !llvm.access.group !1
 
 
 ; ModuleID = '<stdin>'

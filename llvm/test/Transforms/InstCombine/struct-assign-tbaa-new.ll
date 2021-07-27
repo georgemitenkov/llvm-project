@@ -12,8 +12,8 @@ declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture, i64, i1) n
 define void @test1(%A* %a1, %A* %a2) {
 entry:
 ; CHECK-LABEL: @test1
-; CHECK: %[[LOAD:.*]] = load i32, {{.*}}, !tbaa [[TAG_A:!.*]]
-; CHECK: store i32 %[[LOAD]], {{.*}}, !tbaa [[TAG_A]]
+; CHECK: %[[LOAD:.*]] = load b32, {{.*}}, !tbaa [[TAG_A:!.*]]
+; CHECK: store b32 %[[LOAD]], {{.*}}, !tbaa [[TAG_A]]
 ; CHECK: ret
   %0 = bitcast %A* %a1 to i8*
   %1 = bitcast %A* %a2 to i8*

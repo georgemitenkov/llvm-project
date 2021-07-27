@@ -663,7 +663,7 @@ public:
   Type *getMemcpyLoopLoweringType(LLVMContext &Context, Value *Length,
                                   unsigned SrcAddrSpace, unsigned DestAddrSpace,
                                   unsigned SrcAlign, unsigned DestAlign) const {
-    return Type::getInt8Ty(Context);
+    return Type::getByte8Ty(Context);
   }
 
   void getMemcpyLoopResidualLoweringType(
@@ -671,7 +671,7 @@ public:
       unsigned RemainingBytes, unsigned SrcAddrSpace, unsigned DestAddrSpace,
       unsigned SrcAlign, unsigned DestAlign) const {
     for (unsigned i = 0; i != RemainingBytes; ++i)
-      OpsOut.push_back(Type::getInt8Ty(Context));
+      OpsOut.push_back(Type::getByte8Ty(Context));
   }
 
   bool areInlineCompatible(const Function *Caller,

@@ -32,10 +32,10 @@ define void @memcpy_nonconst_n_unused_retval(i8* %d, i8* nocapture readonly %s, 
 
 define i8* @memcpy_small_const_n(i8* %d, i8* nocapture readonly %s) {
 ; CHECK-LABEL: @memcpy_small_const_n(
-; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to i64*
-; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to i64*
-; CHECK-NEXT:    [[TMP3:%.*]] = load i64, i64* [[TMP1]], align 1
-; CHECK-NEXT:    store i64 [[TMP3]], i64* [[TMP2]], align 1
+; CHECK-NEXT:    [[TMP1:%.*]] = bitcast i8* [[S:%.*]] to b64*
+; CHECK-NEXT:    [[TMP2:%.*]] = bitcast i8* [[D:%.*]] to b64*
+; CHECK-NEXT:    [[TMP3:%.*]] = load b64, b64* [[TMP1]], align 1
+; CHECK-NEXT:    store b64 [[TMP3]], b64* [[TMP2]], align 1
 ; CHECK-NEXT:    [[TMP4:%.*]] = getelementptr inbounds i8, i8* [[D]], i64 8
 ; CHECK-NEXT:    ret i8* [[TMP4]]
 ;
