@@ -30,10 +30,10 @@
 ; CHECK:   CS<None> calls function '.omp_outlined..1'
 
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 
-@.str = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
-@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str, i32 0, i32 0) }, align 8
+@.str = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
+@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @.str, i32 0, i32 0) }, align 8
 
 define dso_local void @dead_fork_call() {
 entry:

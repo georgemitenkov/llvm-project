@@ -51,7 +51,7 @@
 
 target triple = "nvptx64"
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 
 @0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
 @1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8

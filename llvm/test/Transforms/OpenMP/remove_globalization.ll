@@ -11,7 +11,7 @@ target triple = "nvptx64"
 
 @S = external local_unnamed_addr global i8*
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 
 declare i32 @__kmpc_target_init(%struct.ident_t*, i1, i1, i1)
 declare void @__kmpc_target_deinit(%struct.ident_t*, i1, i1)

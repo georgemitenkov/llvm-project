@@ -4,7 +4,7 @@ target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16
 
 ; CHECK: %struct.__tgt_async_info = type { i8* }
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 %struct.__tgt_offload_entry = type { i8*, i8*, i64, i32, i32 }
 
 @.offload_maptypes = private unnamed_addr constant [1 x i64] [i64 35]
@@ -21,8 +21,8 @@ target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16
 
 @.offload_maptypes.5 = private unnamed_addr constant [1 x i64] [i64 33]
 
-@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 34, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str0, i32 0, i32 0) }, align 8
-@.str0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
+@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 34, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @.str0, i32 0, i32 0) }, align 8
+@.str0 = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
 
 ;double heavyComputation1() {
 ;  double a = rand() % 777;

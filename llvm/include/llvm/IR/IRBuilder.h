@@ -2006,8 +2006,8 @@ public:
         Name);
   }
 
-  /// Same as CreateGlobalString, but return a pointer with "i8*" type
-  /// instead of a pointer to array of i8.
+  /// Same as CreateGlobalString, but return a pointer with "b8*" type
+  /// instead of a pointer to array of b8.
   ///
   /// If no module is given via \p M, it is take from the insertion point basic
   /// block.

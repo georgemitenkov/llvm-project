@@ -7,7 +7,7 @@ target triple = "nvptx64"
 ; CHECK: remark: globalization_remarks.c:5:7: Could not move globalized variable to the stack. Variable is potentially captured in call. Mark parameter as `__attribute__((noescape))` to override.
 ; CHECK: remark: globalization_remarks.c:5:7: Found thread data sharing on the GPU. Expect degraded performance due to data globalization.
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 
 @S = external local_unnamed_addr global i8*
 

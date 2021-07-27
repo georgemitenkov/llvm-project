@@ -6,11 +6,11 @@ source_filename = "icv_remarks.c"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-unknown-linux-gnu"
 
-%struct.ident_t = type { i32, i32, i32, i32, i8* }
+%struct.ident_t = type { i32, i32, i32, i32, b8* }
 
-@.str = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
-@0 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str, i32 0, i32 0) }, align 8
-@1 = private unnamed_addr constant [26 x i8] c";icv_remarks.c;foo;18;1;;\00", align 1
+@.str = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
+@0 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @.str, i32 0, i32 0) }, align 8
+@1 = private unnamed_addr constant [26 x b8] c";icv_remarks.c;foo;18;1;;\00", align 1
 
 ; CHECK-DAG: remark: icv_remarks.c:12:0: OpenMP ICV nthreads Value: IMPLEMENTATION_DEFINED
 ; CHECK-DAG: remark: icv_remarks.c:12:0: OpenMP ICV active_levels Value: 0
@@ -26,7 +26,7 @@ entry:
   call void @llvm.dbg.value(metadata i32 %call, metadata !20, metadata !DIExpression()), !dbg !21
   tail call void @use(i32 %call) #1, !dbg !24
   %1 = getelementptr inbounds %struct.ident_t, %struct.ident_t* %.kmpc_loc.addr, i64 0, i32 4, !dbg !25
-  store i8* getelementptr inbounds ([26 x i8], [26 x i8]* @1, i64 0, i64 0), i8** %1, align 8, !dbg !25, !tbaa !26
+  store b8* getelementptr inbounds ([26 x b8], [26 x b8]* @1, i64 0, i64 0), b8** %1, align 8, !dbg !25, !tbaa !26
   call void (%struct.ident_t*, i32, void (i32*, i32*, ...)*, ...) @__kmpc_fork_call(%struct.ident_t* nonnull %.kmpc_loc.addr, i32 0, void (i32*, i32*, ...)* bitcast (void (i32*, i32*)* @.omp_outlined. to void (i32*, i32*, ...)*)) #1, !dbg !25
   ret void, !dbg !32
 }

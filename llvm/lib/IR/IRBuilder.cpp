@@ -37,7 +37,7 @@
 using namespace llvm;
 
 /// CreateGlobalString - Make a new global variable with an initializer that
-/// has array of i8 type filled in with the nul terminated string value
+/// has array of b8 type filled in with the nul terminated string value
 /// specified.  If Name is specified, it is the name of the global variable
 /// created.
 GlobalVariable *IRBuilderBase::CreateGlobalString(StringRef Str,
