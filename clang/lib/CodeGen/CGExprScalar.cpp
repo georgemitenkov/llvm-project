@@ -1223,7 +1223,7 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
     DstElementType = DstType;
   }
 
-  if (isa<llvm::ByteType>(SrcElementTy)) {
+  if (SrcElementTy->isByteTy()) {
     bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
     llvm::Value *IntResult = Builder.CreateByteCast(Src, "conv");
     if (DstTy->isIntegerTy())
@@ -1234,20 +1234,20 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
                        : Builder.CreateUIToFP(IntResult, DstTy, "conv");
   }
 
-  if (isa<llvm::IntegerType>(SrcElementTy)) {
+  if (SrcElementTy->isIntegerTy()) {
     bool InputSigned = SrcElementType->isSignedIntegerOrEnumerationType();
     if (SrcElementType->isBooleanType() && Opts.TreatBooleanAsSigned) {
       InputSigned = true;
     }
 
-    if (isa<llvm::ByteType>(DstElementTy)) {
+    if (DstElementTy->isByteTy()) {
       llvm::Type *DstITy =
           llvm::Type::getIntNTy(DstTy->getContext(), DstTy->getByteBitWidth());
       return Builder.CreateBitCast(
           Builder.CreateIntCast(Src, DstITy, InputSigned, "conv"), DstTy);
     }
 
-    if (isa<llvm::IntegerType>(DstElementTy))
+    if (DstElementTy->isIntegerTy())
       return Builder.CreateIntCast(Src, DstTy, InputSigned, "conv");
 
     if (InputSigned)
@@ -1255,11 +1255,23 @@ Value *ScalarExprEmitter::EmitScalarCast(Value *Src, QualType SrcType,
     return Builder.CreateUIToFP(Src, DstTy, "conv");
   }
 
-  if (isa<llvm::IntegerType>(DstElementTy)) {
+  if (DstElementTy->isIntegerTy()) {
     assert(SrcElementTy->isFloatingPointTy() && "Unknown real conversion");
     if (DstElementType->isSignedIntegerOrEnumerationType())
       return Builder.CreateFPToSI(Src, DstTy, "conv");
     return Builder.CreateFPToUI(Src, DstTy, "conv");
+  }
+
+  if (DstElementTy->isByteTy()) {
+    assert(SrcElementTy->isFloatingPointTy() && "Unknown real conversion");
+
+    llvm::Type *DstITy =
+        llvm::Type::getIntNTy(DstTy->getContext(), DstTy->getByteBitWidth());
+    if (DstElementType->isSignedIntegerOrEnumerationType())
+      return Builder.CreateBitCast(Builder.CreateFPToSI(Src, DstITy, "conv"),
+                                   DstTy);
+    return Builder.CreateBitCast(Builder.CreateFPToUI(Src, DstITy, "conv"),
+                                 DstTy);
   }
 
   if (DstElementTy->getTypeID() < SrcElementTy->getTypeID())
