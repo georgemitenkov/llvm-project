@@ -559,8 +559,8 @@ Constant *llvm::ConstantFoldCastInstruction(unsigned opc, Constant *V,
   }
 
   // Since byte constants do not exist, we cannot fold BitCasts to bytes. If
-  // this is the case, return immediately. Also, disallow ByteCast folds.
-  if (opc == Instruction::ByteCast || DestTy->isByteOrByteVectorTy())
+  // this is the case, return immediately.
+  if (DestTy->isByteOrByteVectorTy())
     return nullptr;
 
   if (V->isNullValue() && !DestTy->isX86_MMXTy() && !DestTy->isX86_AMXTy() &&
