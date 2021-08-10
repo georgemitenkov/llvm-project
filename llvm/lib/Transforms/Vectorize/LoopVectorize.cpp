@@ -4940,7 +4940,8 @@ void InnerLoopVectorizer::widenInstruction(Instruction &I, VPValue *Def,
   case Instruction::UIToFP:
   case Instruction::Trunc:
   case Instruction::FPTrunc:
-  case Instruction::BitCast: {
+  case Instruction::BitCast:
+  case Instruction::ByteCast: {
     auto *CI = cast<CastInst>(&I);
     setDebugLocFromInst(CI);
 
@@ -7769,6 +7770,11 @@ LoopVectorizationCostModel::getInstructionCost(Instruction *I, ElementCount VF,
     VectorTy = ToVectorTy(getLoadStoreType(I), Width);
     return getMemoryInstructionCost(I, VF);
   }
+  case Instruction::ByteCast:
+    // Bytecasts to integers simply reinterpret types, and are free.
+    if (I->getType()->isIntegerTy())
+      return 0;
+    LLVM_FALLTHROUGH;
   case Instruction::BitCast:
     if (I->getType()->isPointerTy())
       return 0;
@@ -8882,6 +8888,7 @@ VPWidenRecipe *VPRecipeBuilder::tryToWiden(Instruction *I,
     case Instruction::And:
     case Instruction::AShr:
     case Instruction::BitCast:
+    case Instruction::ByteCast:
     case Instruction::FAdd:
     case Instruction::FCmp:
     case Instruction::FDiv:

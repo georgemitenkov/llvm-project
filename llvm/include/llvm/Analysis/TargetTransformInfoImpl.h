@@ -496,8 +496,9 @@ public:
       break;
     }
     case Instruction::BitCast:
-      if (Dst == Src || (Dst->isPointerTy() && Src->isPointerTy()))
-        // Identity and pointer-to-pointer casts are free.
+      if (Dst == Src || (Dst->isPointerTy() && Src->isPointerTy()) ||
+          Dst->isByteTy())
+        // Identity, pointer-to-pointer casts and casts to bytes are free.
         return 0;
       break;
     case Instruction::Trunc: {
