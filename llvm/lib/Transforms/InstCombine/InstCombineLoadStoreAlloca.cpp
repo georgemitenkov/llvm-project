@@ -1143,6 +1143,11 @@ static bool combineStoreToValueType(InstCombinerImpl &IC, StoreInst &SI) {
     // x86_amx type happy.
     if (V->getType()->isX86_AMXTy())
       return false;
+
+    // Do not transform bitcasts to bytes as well, it makes vectorizer happy.
+    if (BC->getDestTy()->isByteTy())
+      return false;
+
     if (!SI.isAtomic() || isSupportedAtomicType(V->getType())) {
       combineStoreToNewValue(IC, SI, V);
       return true;
