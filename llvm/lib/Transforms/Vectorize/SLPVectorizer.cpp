@@ -3419,6 +3419,7 @@ void BoUpSLP::buildTree_rec(ArrayRef<Value *> VL, unsigned Depth,
     case Instruction::UIToFP:
     case Instruction::Trunc:
     case Instruction::FPTrunc:
+    case Instruction::ByteCast:
     case Instruction::BitCast: {
       Type *SrcTy = VL0->getOperand(0)->getType();
       for (Value *V : VL) {
@@ -4397,6 +4398,9 @@ InstructionCost BoUpSLP::getEntryCost(const TreeEntry *E,
 
       return Cost;
     }
+    case Instruction::ByteCast:
+      // Currently, treat bytecasts as a no-op.
+      return 0;
     case Instruction::ZExt:
     case Instruction::SExt:
     case Instruction::FPToUI:
@@ -4754,7 +4758,8 @@ static bool isLoadCombineCandidateImpl(Value *Root, unsigned NumElts,
   // Check if the input is an extended load of the required or/shift expression.
   Value *LoadPtr;
   if ((MustMatchOrInst && !FoundOr) || ZextLoad == Root ||
-      !match(ZextLoad, m_ZExt(m_Load(m_Value(LoadPtr)))))
+      !match(ZextLoad, m_ZExt(m_Load(m_Value(LoadPtr)))) ||
+      !match(ZextLoad, m_ZExt(m_ByteCast(m_Load(m_Value(LoadPtr))))))
     return false;
 
   // Require that the total load bit width is a legal integer type.
@@ -5754,6 +5759,7 @@ Value *BoUpSLP::vectorizeTree(TreeEntry *E) {
     case Instruction::UIToFP:
     case Instruction::Trunc:
     case Instruction::FPTrunc:
+    case Instruction::ByteCast:
     case Instruction::BitCast: {
       setInsertPointAfterBundle(E);
 

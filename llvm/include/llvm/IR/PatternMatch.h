@@ -1604,6 +1604,12 @@ inline CastClass_match<OpTy, Instruction::BitCast> m_BitCast(const OpTy &Op) {
   return CastClass_match<OpTy, Instruction::BitCast>(Op);
 }
 
+/// Matches ByteCast.
+template <typename OpTy>
+inline CastClass_match<OpTy, Instruction::ByteCast> m_ByteCast(const OpTy &Op) {
+  return CastClass_match<OpTy, Instruction::ByteCast>(Op);
+}
+
 /// Matches PtrToInt.
 template <typename OpTy>
 inline CastClass_match<OpTy, Instruction::PtrToInt> m_PtrToInt(const OpTy &Op) {
