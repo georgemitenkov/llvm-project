@@ -2316,6 +2316,13 @@ CallAnalyzer::analyzeBlock(BasicBlock *BB,
     if (EphValues.count(&I))
       continue;
 
+    // Bytecasts and bitcast to bytes are no-ops, as they only reinterpret
+    // bytes. For the baseline implementation, skipping them is sufficient.
+    bool IsNoOpCast = isa<ByteCastInst>(I) ||
+                      (isa<BitCastInst>(I) && I.getType()->isByteTy());
+    if (IsNoOpCast)
+      continue;
+
     ++NumInstructions;
     if (isa<ExtractElementInst>(I) || I.getType()->isVectorTy())
       ++NumVectorInstructions;

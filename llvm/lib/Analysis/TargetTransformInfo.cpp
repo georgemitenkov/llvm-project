@@ -754,15 +754,29 @@ TargetTransformInfo::getCastContextHint(const Instruction *I) {
   switch (I->getOpcode()) {
   case Instruction::ZExt:
   case Instruction::SExt:
-  case Instruction::FPExt:
-    return getLoadStoreKind(I->getOperand(0), Instruction::Load,
-                            Intrinsic::masked_load, Intrinsic::masked_gather);
+  case Instruction::FPExt: {
+    // It is common to have a zext (bytecast (load)) pattern. Since bytecast
+    // is a no-op, we strip the cast and pass its operand instead.
+    Value *Op = I->getOperand(0);
+    if (auto *Cast = dyn_cast<ByteCastInst>(Op))
+      Op = Cast->getOperand(0);
+
+    return getLoadStoreKind(Op, Instruction::Load, Intrinsic::masked_load,
+                            Intrinsic::masked_gather);
+  }
   case Instruction::Trunc:
   case Instruction::FPTrunc:
-    if (I->hasOneUse())
-      return getLoadStoreKind(*I->user_begin(), Instruction::Store,
-                              Intrinsic::masked_store,
+    if (I->hasOneUse()) {
+      auto *U = *I->user_begin();
+
+      // Similarly to the case above, strip bitcasts to bytes.
+      if (auto *Cast = dyn_cast<BitCastInst>(U))
+        if (Cast->getDestTy()->isByteTy() && Cast->hasOneUse())
+          U = *Cast->user_begin();
+
+      return getLoadStoreKind(U, Instruction::Store, Intrinsic::masked_store,
                               Intrinsic::masked_scatter);
+    }
     break;
   default:
     return CastContextHint::None;
