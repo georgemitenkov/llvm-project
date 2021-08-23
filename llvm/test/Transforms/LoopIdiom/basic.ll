@@ -968,6 +968,41 @@ for.end6:                                         ; preds = %for.inc4
   ret void
 }
 
+; Also check that byte contants are recognized.
+define void @test20(b8* %Base, i64 %Size) nounwind ssp {
+; CHECK-LABEL: @test20(
+; CHECK-NEXT:  bb.nph:
+; CHECK-NEXT:    [[I8_BASE:%.*]] = bitcast b8* [[BASE:%.*]] to i8*
+; CHECK-NEXT:    call void @llvm.memset.p0i8.i64(i8* align 1 [[I8_BASE]], i8 -1, i64 [[SIZE:%.*]], i1 false)
+; CHECK-NEXT:    br label [[FOR_BODY:%.*]]
+; CHECK:       for.body:
+; CHECK-NEXT:    [[INDVAR:%.*]] = phi i64 [ 0, [[BB_NPH:%.*]] ], [ [[INDVAR_NEXT:%.*]], [[FOR_BODY_CONT:%.*]] ]
+; CHECK-NEXT:    br label [[FOR_BODY_CONT]]
+; CHECK:       for.body.cont:
+; CHECK-NEXT:    [[I_0_014:%.*]] = getelementptr b8, b8* [[BASE]], i64 [[INDVAR]]
+; CHECK-NEXT:    [[INDVAR_NEXT]] = add i64 [[INDVAR]], 1
+; CHECK-NEXT:    [[EXITCOND:%.*]] = icmp eq i64 [[INDVAR_NEXT]], [[SIZE]]
+; CHECK-NEXT:    br i1 [[EXITCOND]], label [[FOR_END:%.*]], label [[FOR_BODY]]
+; CHECK:       for.end:
+; CHECK-NEXT:    ret void
+;
+bb.nph:                                           ; preds = %entry
+  br label %for.body
+
+for.body:                                         ; preds = %bb.nph, %for.body
+  %indvar = phi i64 [ 0, %bb.nph ], [ %indvar.next, %for.body.cont ]
+  br label %for.body.cont
+for.body.cont:
+  %I.0.014 = getelementptr b8, b8* %Base, i64 %indvar
+  store b8 bitcast (i8 -1 to b8), b8* %I.0.014, align 1
+  %indvar.next = add i64 %indvar, 1
+  %exitcond = icmp eq i64 %indvar.next, %Size
+  br i1 %exitcond, label %for.end, label %for.body
+
+for.end:                                          ; preds = %for.body, %entry
+  ret void
+}
+
 ; Handle loops where the trip count is a narrow integer that needs to be
 ; extended.
 define void @form_memset_narrow_size(i64* %ptr, i32 %size) {
