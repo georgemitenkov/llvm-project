@@ -2547,14 +2547,18 @@ public:
 
   /// Return an i1 value testing if \p Arg is null.
   Value *CreateIsNull(Value *Arg, const Twine &Name = "") {
-    return CreateICmpEQ(Arg, Constant::getNullValue(Arg->getType()),
-                        Name);
+    Value *Ptr = Arg;
+    if (Ptr->getType()->isByteOrByteVectorTy())
+      Ptr = CreateByteCast(Arg, Name);
+    return CreateICmpEQ(Ptr, Constant::getNullValue(Ptr->getType()), Name);
   }
 
   /// Return an i1 value testing if \p Arg is not null.
   Value *CreateIsNotNull(Value *Arg, const Twine &Name = "") {
-    return CreateICmpNE(Arg, Constant::getNullValue(Arg->getType()),
-                        Name);
+    Value *Ptr = Arg;
+    if (Ptr->getType()->isByteOrByteVectorTy())
+      Ptr = CreateByteCast(Arg, Name);
+    return CreateICmpNE(Ptr, Constant::getNullValue(Ptr->getType()), Name);
   }
 
   /// Return the i64 difference between two pointer values, dividing out
