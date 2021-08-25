@@ -386,6 +386,8 @@ enum ConstantsCodes {
   CST_CODE_INLINEASM = 28, // INLINEASM:     [sideeffect|alignstack|
                            //                 asmdialect|unwind,
                            //                 asmstr,conststr]
+  CST_CODE_STRING_BYTE =29,      // byte STRING:    [values]
+  CST_CODE_CSTRING_BYTE = 30,    // byte CSTRING:   [values]
 };
 
 /// CastOpcodes - These are values used in the bitcode files to encode which

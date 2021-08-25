@@ -36,8 +36,21 @@
 
 using namespace llvm;
 
+static GlobalVariable *createGlobalString(BasicBlock *BB, Constant *C,
+                                          const Twine &Name,
+                                          unsigned AddressSpace, Module *M) {
+  if (!M)
+    M = BB->getParent()->getParent();
+  auto *GV = new GlobalVariable(*M, C->getType(), true,
+                                GlobalValue::PrivateLinkage, C, Name, nullptr,
+                                GlobalVariable::NotThreadLocal, AddressSpace);
+  GV->setUnnamedAddr(GlobalValue::UnnamedAddr::Global);
+  GV->setAlignment(Align(1));
+  return GV;
+}
+
 /// CreateGlobalString - Make a new global variable with an initializer that
-/// has array of b8 type filled in with the nul terminated string value
+/// has array of i8 type filled in with the nul terminated string value
 /// specified.  If Name is specified, it is the name of the global variable
 /// created.
 GlobalVariable *IRBuilderBase::CreateGlobalString(StringRef Str,
@@ -45,14 +58,17 @@ GlobalVariable *IRBuilderBase::CreateGlobalString(StringRef Str,
                                                   unsigned AddressSpace,
                                                   Module *M) {
   Constant *StrConstant = ConstantDataArray::getString(Context, Str);
-  if (!M)
-    M = BB->getParent()->getParent();
-  auto *GV = new GlobalVariable(
-      *M, StrConstant->getType(), true, GlobalValue::PrivateLinkage,
-      StrConstant, Name, nullptr, GlobalVariable::NotThreadLocal, AddressSpace);
-  GV->setUnnamedAddr(GlobalValue::UnnamedAddr::Global);
-  GV->setAlignment(Align(1));
-  return GV;
+  return createGlobalString(BB, StrConstant, Name, AddressSpace, M);
+}
+
+/// Same as `CreateGlobalString()` but uses b8 type instead.
+GlobalVariable *IRBuilderBase::CreateGlobalByteString(StringRef Str,
+                                                      const Twine &Name,
+                                                      unsigned AddressSpace,
+                                                      Module *M) {
+  Constant *StrConstant = ConstantDataArray::getByteString(Context, Str);
+  return createGlobalString(BB, StrConstant, Name, AddressSpace, M);
+  ;
 }
 
 Type *IRBuilderBase::getCurrentFunctionReturnType() const {

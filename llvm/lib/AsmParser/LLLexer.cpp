@@ -639,6 +639,7 @@ lltok::Kind LLLexer::LexIdentifier() {
 
   KEYWORD(cc);
   KEYWORD(c);
+  KEYWORD(b);
 
   KEYWORD(attributes);
 

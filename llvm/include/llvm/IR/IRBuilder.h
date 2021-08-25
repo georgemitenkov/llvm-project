@@ -449,6 +449,11 @@ public:
                                      unsigned AddressSpace = 0,
                                      Module *M = nullptr);
 
+  /// Same as `CreateGlobalString()` but the underlying type is b8*
+  GlobalVariable *CreateGlobalByteString(StringRef Str, const Twine &Name = "",
+                                         unsigned AddressSpace = 0,
+                                         Module *M = nullptr);
+
   /// Get a constant value representing either true or false.
   ConstantInt *getInt1(bool V) {
     return ConstantInt::get(getInt1Ty(), V);
@@ -2006,8 +2011,8 @@ public:
         Name);
   }
 
-  /// Same as CreateGlobalString, but return a pointer with "b8*" type
-  /// instead of a pointer to array of b8.
+  /// Same as CreateGlobalString, but return a pointer with "i8*" type
+  /// instead of a pointer to array of i8.
   ///
   /// If no module is given via \p M, it is take from the insertion point basic
   /// block.
@@ -2015,6 +2020,17 @@ public:
                                   unsigned AddressSpace = 0,
                                   Module *M = nullptr) {
     GlobalVariable *GV = CreateGlobalString(Str, Name, AddressSpace, M);
+    Constant *Zero = ConstantInt::get(Type::getInt32Ty(Context), 0);
+    Constant *Indices[] = {Zero, Zero};
+    return ConstantExpr::getInBoundsGetElementPtr(GV->getValueType(), GV,
+                                                  Indices);
+  }
+
+  /// Same as `CreateGlobalStringPtr()` but operates on byte strings.
+  Constant *CreateGlobalByteStringPtr(StringRef Str, const Twine &Name = "",
+                                      unsigned AddressSpace = 0,
+                                      Module *M = nullptr) {
+    GlobalVariable *GV = CreateGlobalByteString(Str, Name, AddressSpace, M);
     Constant *Zero = ConstantInt::get(Type::getInt32Ty(Context), 0);
     Constant *Indices[] = {Zero, Zero};
     return ConstantExpr::getInBoundsGetElementPtr(GV->getValueType(), GV,

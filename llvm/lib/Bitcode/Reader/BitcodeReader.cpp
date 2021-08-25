@@ -2523,6 +2523,16 @@ Error BitcodeReader::parseConstants() {
                                        BitCode == bitc::CST_CODE_CSTRING);
       break;
     }
+    case bitc::CST_CODE_STRING_BYTE:    // byte STRING: [values]
+    case bitc::CST_CODE_CSTRING_BYTE: { // byte CSTRING: [values]
+      if (Record.empty())
+        return error("Invalid record");
+
+      SmallString<16> Elts(Record.begin(), Record.end());
+      V = ConstantDataArray::getByteString(
+          Context, Elts, BitCode == bitc::CST_CODE_CSTRING_BYTE);
+      break;
+    }
     case bitc::CST_CODE_DATA: {// DATA: [n x value]
       if (Record.empty())
         return error("Invalid record");

@@ -3088,6 +3088,19 @@ Constant *ConstantDataArray::getFP(Type *ElementType, ArrayRef<uint64_t> Elts) {
 
 Constant *ConstantDataArray::getString(LLVMContext &Context,
                                        StringRef Str, bool AddNull) {
+  if (!AddNull) {
+    const uint8_t *Data = Str.bytes_begin();
+    return get(Context, makeArrayRef(Data, Str.size()));
+  }
+
+  SmallVector<uint8_t, 64> ElementVals;
+  ElementVals.append(Str.begin(), Str.end());
+  ElementVals.push_back(0);
+  return get(Context, ElementVals);
+}
+
+Constant *ConstantDataArray::getByteString(LLVMContext &Context, StringRef Str,
+                                           bool AddNull) {
   if (!AddNull)
     return getRaw(Str, Str.size(), Type::getByte8Ty(Context));
 
@@ -3316,13 +3329,15 @@ Constant *ConstantDataSequential::getElementAsConstant(unsigned Elt) const {
 }
 
 bool ConstantDataSequential::isString(unsigned CharSize) const {
-  return isa<ArrayType>(getType()) &&
-         (getElementType()->isIntegerTy(CharSize) ||
-          getElementType()->isByteTy(8));
+  return isa<ArrayType>(getType()) && getElementType()->isIntegerTy(CharSize);
+}
+
+bool ConstantDataSequential::isByteString() const {
+  return isa<ArrayType>(getType()) && getElementType()->isByteTy(8);
 }
 
 bool ConstantDataSequential::isCString() const {
-  if (!isString())
+  if (!isString() && !isByteString())
     return false;
 
   StringRef Str = getAsString();

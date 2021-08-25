@@ -3139,6 +3139,15 @@ bool LLParser::parseValID(ValID &ID, PerFunctionState *PFS, Type *ExpectedTy) {
     ID.Kind = ValID::t_Constant;
     return false;
 
+  case lltok::kw_b: // b "foo"
+    Lex.Lex();
+    ID.ConstantVal =
+        ConstantDataArray::getByteString(Context, Lex.getStrVal(), false);
+    if (parseToken(lltok::StringConstant, "expected byte string"))
+      return true;
+    ID.Kind = ValID::t_Constant;
+    return false;
+
   case lltok::kw_asm: {
     // ValID ::= 'asm' SideEffect? AlignStack? IntelDialect? STRINGCONSTANT ','
     //             STRINGCONSTANT

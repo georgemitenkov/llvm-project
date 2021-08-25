@@ -635,6 +635,9 @@ public:
   /// This method returns true if this is an array of \p CharSize integers.
   bool isString(unsigned CharSize = 8) const;
 
+  /// This method returns true if this is an array of b8.
+  bool isByteString() const;
+
   /// This method returns true if the array "isString", ends with a null byte,
   /// and does not contains any other null bytes.
   bool isCString() const;
@@ -642,7 +645,7 @@ public:
   /// If this array is isString(), then this method returns the array as a
   /// StringRef. Otherwise, it asserts out.
   StringRef getAsString() const {
-    assert(isString() && "Not a string");
+    assert((isString() || isByteString()) && "Not a string");
     return getRawDataValues();
   }
 
@@ -730,6 +733,11 @@ public:
   /// to disable this behavior.
   static Constant *getString(LLVMContext &Context, StringRef Initializer,
                              bool AddNull = true);
+
+  /// This method has the same behaviour as `getString()` but instead of using
+  /// integer types as underlying string representation, a byte type is used.
+  static Constant *getByteString(LLVMContext &Context, StringRef Initializer,
+                                 bool AddNull = true);
 
   /// Specialize the getType() method to always return an ArrayType,
   /// which reduces the amount of casting needed in parts of the compiler.

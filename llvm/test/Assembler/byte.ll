@@ -9,6 +9,11 @@
 @b = constant [1 x b8] zeroinitializer
 @c = constant [2 x b8] [b8 bitcast (i8 1 to b8), b8 bitcast (i8 2 to b8)]
 
+@str = internal constant [13 x b8] b"Hello World!\00"
+
+@byte = internal unnamed_addr constant [5 x b8] b"Hello"
+@original = internal unnamed_addr constant [5 x i8] c"Hello"
+
 ; CHECK: @bytes(b1 %{{.*}}, b8 %{{.*}}, b16 %{{.*}}, b32 %{{.*}}, b64 %{{.*}}, b128 %{{.*}})
 define void @bytes(b1 %a, b8 %b, b16 %c, b32 %d, b64 %e, b128 %f) {
     ret void

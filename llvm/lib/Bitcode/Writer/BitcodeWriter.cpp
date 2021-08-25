@@ -531,6 +531,19 @@ static unsigned getEncodedCastOpcode(unsigned Opcode) {
   }
 }
 
+static unsigned getEncodedString(const ConstantDataSequential *C) {
+  if (C->isCString()) {
+    if (C->isByteString())
+      return bitc::CST_CODE_CSTRING_BYTE;
+    else
+      return bitc::CST_CODE_CSTRING;
+  }
+  if (C->isByteString())
+    return bitc::CST_CODE_STRING_BYTE;
+  else
+    return bitc::CST_CODE_STRING;
+}
+
 static unsigned getEncodedUnaryOpcode(unsigned Opcode) {
   switch (Opcode) {
   default: llvm_unreachable("Unknown binary instruction!");
@@ -2411,6 +2424,9 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
   unsigned String8Abbrev = 0;
   unsigned CString7Abbrev = 0;
   unsigned CString6Abbrev = 0;
+  unsigned ByteString8Abbrev = 0;
+  unsigned ByteCString7Abbrev = 0;
+  unsigned ByteCString6Abbrev = 0;
   // If this is a constant pool for the module, emit module-specific abbrevs.
   if (isGlobal) {
     // Abbrev for CST_CODE_AGGREGATE.
@@ -2438,6 +2454,27 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
     Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Array));
     Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Char6));
     CString6Abbrev = Stream.EmitAbbrev(std::move(Abbv));
+
+    // For now, emit abbrevs for bytes as well.
+    // TODO: this can be simplified and refactored.
+    // Abbrev for CST_CODE_STRING_BYTE.
+    Abbv = std::make_shared<BitCodeAbbrev>();
+    Abbv->Add(BitCodeAbbrevOp(bitc::CST_CODE_STRING_BYTE));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Array));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 8));
+    ByteString8Abbrev = Stream.EmitAbbrev(std::move(Abbv));
+    // Abbrev for CST_CODE_CSTRING.
+    Abbv = std::make_shared<BitCodeAbbrev>();
+    Abbv->Add(BitCodeAbbrevOp(bitc::CST_CODE_CSTRING_BYTE));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Array));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Fixed, 7));
+    ByteCString7Abbrev = Stream.EmitAbbrev(std::move(Abbv));
+    // Abbrev for CST_CODE_CSTRING.
+    Abbv = std::make_shared<BitCodeAbbrev>();
+    Abbv->Add(BitCodeAbbrevOp(bitc::CST_CODE_CSTRING_BYTE));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Array));
+    Abbv->Add(BitCodeAbbrevOp(BitCodeAbbrevOp::Char6));
+    ByteCString6Abbrev = Stream.EmitAbbrev(std::move(Abbv));
   }
 
   SmallVector<uint64_t, 64> Record;
@@ -2514,20 +2551,23 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
         assert(0 && "Unknown FP type!");
       }
     } else if (isa<ConstantDataSequential>(C) &&
-               cast<ConstantDataSequential>(C)->isString()) {
+               (cast<ConstantDataSequential>(C)->isString() ||
+                cast<ConstantDataSequential>(C)->isByteString())) {
       const ConstantDataSequential *Str = cast<ConstantDataSequential>(C);
       // Emit constant strings specially.
       unsigned NumElts = Str->getNumElements();
       // If this is a null-terminated string, use the denser CSTRING encoding.
-      if (Str->isCString()) {
-        Code = bitc::CST_CODE_CSTRING;
-        --NumElts;  // Don't encode the null, which isn't allowed by char6.
-      } else {
-        Code = bitc::CST_CODE_STRING;
-        AbbrevToUse = String8Abbrev;
-      }
-      bool isCStr7 = Code == bitc::CST_CODE_CSTRING;
-      bool isCStrChar6 = Code == bitc::CST_CODE_CSTRING;
+      Code = getEncodedString(Str);
+      bool isCString =
+          Code == bitc::CST_CODE_CSTRING || Code == bitc::CST_CODE_CSTRING_BYTE;
+      if (isCString)
+        // Don't encode the null, which isn't allowed by char6.
+        --NumElts;
+      else
+        AbbrevToUse = Code == bitc::CST_CODE_STRING_BYTE ? ByteString8Abbrev
+                                                         : String8Abbrev;
+      bool isCStr7 = isCString;
+      bool isCStrChar6 = isCString;
       for (unsigned i = 0; i != NumElts; ++i) {
         unsigned char V = Str->getElementAsInteger(i);
         Record.push_back(V);
@@ -2537,11 +2577,13 @@ void ModuleBitcodeWriter::writeConstants(unsigned FirstVal, unsigned LastVal,
       }
 
       if (isCStrChar6)
-        AbbrevToUse = CString6Abbrev;
+        AbbrevToUse = Code == bitc::CST_CODE_CSTRING_BYTE ? ByteCString6Abbrev
+                                                          : CString6Abbrev;
       else if (isCStr7)
-        AbbrevToUse = CString7Abbrev;
+        AbbrevToUse = Code == bitc::CST_CODE_CSTRING_BYTE ? ByteCString7Abbrev
+                                                          : CString7Abbrev;
     } else if (const ConstantDataSequential *CDS =
-                  dyn_cast<ConstantDataSequential>(C)) {
+                   dyn_cast<ConstantDataSequential>(C)) {
       Code = bitc::CST_CODE_DATA;
       Type *EltTy = CDS->getElementType();
       if (isa<IntegerType>(EltTy)) {
