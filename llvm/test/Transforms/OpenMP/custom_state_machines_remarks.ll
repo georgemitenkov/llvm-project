@@ -35,24 +35,24 @@ target triple = "nvptx64"
 ;;   }
 ;; }
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
-@0 = private unnamed_addr constant [113 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_fallback_l11;11;1;;\00", align 1
-@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([113 x b8], [113 x b8]* @0, i32 0, i32 0) }, align 8
-@2 = private unnamed_addr constant [82 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;test_fallback;11;1;;\00", align 1
-@3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([82 x b8], [82 x b8]* @2, i32 0, i32 0) }, align 8
-@4 = private unnamed_addr constant [114 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_fallback_l11;11;25;;\00", align 1
-@5 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([114 x b8], [114 x b8]* @4, i32 0, i32 0) }, align 8
+@0 = private unnamed_addr constant [113 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_fallback_l11;11;1;;\00", align 1
+@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([113 x i8], [113 x i8]* @0, i32 0, i32 0) }, align 8
+@2 = private unnamed_addr constant [82 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;test_fallback;11;1;;\00", align 1
+@3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([82 x i8], [82 x i8]* @2, i32 0, i32 0) }, align 8
+@4 = private unnamed_addr constant [114 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_fallback_l11;11;25;;\00", align 1
+@5 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([114 x i8], [114 x i8]* @4, i32 0, i32 0) }, align 8
 @__omp_offloading_2a_d80d3d_test_fallback_l11_exec_mode = weak constant i8 1
-@6 = private unnamed_addr constant [116 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_no_fallback_l20;20;1;;\00", align 1
-@7 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([116 x b8], [116 x b8]* @6, i32 0, i32 0) }, align 8
-@8 = private unnamed_addr constant [85 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;test_no_fallback;20;1;;\00", align 1
-@9 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([85 x b8], [85 x b8]* @8, i32 0, i32 0) }, align 8
-@10 = private unnamed_addr constant [117 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_no_fallback_l20;20;25;;\00", align 1
-@11 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([117 x b8], [117 x b8]* @10, i32 0, i32 0) }, align 8
+@6 = private unnamed_addr constant [116 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_no_fallback_l20;20;1;;\00", align 1
+@7 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([116 x i8], [116 x i8]* @6, i32 0, i32 0) }, align 8
+@8 = private unnamed_addr constant [85 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;test_no_fallback;20;1;;\00", align 1
+@9 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([85 x i8], [85 x i8]* @8, i32 0, i32 0) }, align 8
+@10 = private unnamed_addr constant [117 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;__omp_offloading_2a_d80d3d_test_no_fallback_l20;20;25;;\00", align 1
+@11 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([117 x i8], [117 x i8]* @10, i32 0, i32 0) }, align 8
 @__omp_offloading_2a_d80d3d_test_no_fallback_l20_exec_mode = weak constant i8 1
-@12 = private unnamed_addr constant [73 x b8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;known;4;1;;\00", align 1
-@13 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, b8* getelementptr inbounds ([73 x b8], [73 x b8]* @12, i32 0, i32 0) }, align 8
+@12 = private unnamed_addr constant [73 x i8] c";llvm/test/Transforms/OpenMP/custom_state_machines_remarks.c;known;4;1;;\00", align 1
+@13 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, i8* getelementptr inbounds ([73 x i8], [73 x i8]* @12, i32 0, i32 0) }, align 8
 @G = external global i32
 @llvm.compiler.used = appending global [2 x i8*] [i8* @__omp_offloading_2a_d80d3d_test_fallback_l11_exec_mode, i8* @__omp_offloading_2a_d80d3d_test_no_fallback_l20_exec_mode], section "llvm.metadata"
 

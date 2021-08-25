@@ -280,7 +280,7 @@ Constant *OpenMPIRBuilder::getOrCreateSrcLocStr(StringRef LocStr) {
     for (GlobalVariable &GV : M.getGlobalList())
       if (GV.isConstant() && GV.hasInitializer() &&
           GV.getInitializer() == Initializer)
-        return SrcLocStr = ConstantExpr::getPointerCast(&GV, Byte8Ptr);
+        return SrcLocStr = ConstantExpr::getPointerCast(&GV, Int8Ptr);
 
     SrcLocStr = Builder.CreateGlobalStringPtr(LocStr, /* Name */ "",
                                               /* AddressSpace */ 0, &M);
@@ -2690,7 +2690,7 @@ OpenMPIRBuilder::createOffloadMapnames(SmallVectorImpl<llvm::Constant *> &Names,
                                        std::string VarName) {
   llvm::Constant *MapNamesArrayInit = llvm::ConstantArray::get(
       llvm::ArrayType::get(
-          llvm::Type::getByte8Ty(M.getContext())->getPointerTo(), Names.size()),
+          llvm::Type::getInt8Ty(M.getContext())->getPointerTo(), Names.size()),
       Names);
   auto *MapNamesArrayGlobal = new llvm::GlobalVariable(
       M, MapNamesArrayInit->getType(),

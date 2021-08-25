@@ -6,7 +6,7 @@ target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16
 
 %struct.omp_lock_t = type { i8* }
 %struct.omp_nest_lock_t = type { i8* }
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
 define void @call_all(i32 %schedule, %struct.omp_lock_t* %lock, i32 %lock_hint, %struct.omp_nest_lock_t* %nest_lock, i32 %i, i8* %s, i64 %st, i8* %vp, double %d, i32 %proc_bind, i64 %allocator_handle, i8* %cp, i64 %event_handle, i32 %pause_resource) {
 entry:

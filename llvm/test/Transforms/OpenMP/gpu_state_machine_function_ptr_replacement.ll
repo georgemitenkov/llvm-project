@@ -35,12 +35,12 @@
 ; CHECK-DAG:   call void @__kmpc_parallel_51(%struct.ident_t* noundef @2, i32 %{{.*}}, i32 noundef 1, i32 noundef -1, i32 noundef -1, i8* noundef bitcast (void (i32*, i32*)* @__omp_outlined__3 to i8*), i8* noundef bitcast (void (i16, i32)* @__omp_outlined__3_wrapper to i8*), i8** noundef %{{.*}}, i64 noundef 0)
 
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
-@0 = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
-@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @0, i32 0, i32 0) }, align 8
+@0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
+@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @__omp_offloading_10301_87b2c_foo_l7_exec_mode = weak constant i8 1
-@2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @0, i32 0, i32 0) }, align 8
+@2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @llvm.compiler.used = appending global [1 x i8*] [i8* @__omp_offloading_10301_87b2c_foo_l7_exec_mode], section "llvm.metadata"
 
 define weak void @__omp_offloading_10301_87b2c_foo_l7() {

@@ -112,11 +112,11 @@
 
 target triple = "nvptx64"
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
-@"_openmp_kernel_static_glob_rd$ptr" = internal addrspace(3) global b8* undef
-@0 = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
-@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @0, i32 0, i32 0) }, align 8
+@"_openmp_kernel_static_glob_rd$ptr" = internal addrspace(3) global i8* undef
+@0 = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
+@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @__omp_offloading_2c_389eb_no_state_machine_needed_l14_exec_mode = weak constant i8 1
 @__omp_offloading_2c_389eb_simple_state_machine_l19_exec_mode = weak constant i8 1
 @__omp_offloading_2c_389eb_simple_state_machine_interprocedural_l35_exec_mode = weak constant i8 1
@@ -125,10 +125,10 @@ target triple = "nvptx64"
 @__omp_offloading_2c_389eb_simple_state_machine_pure_l72_exec_mode = weak constant i8 1
 @__omp_offloading_2c_389eb_simple_state_machine_interprocedural_nested_recursive_l86_exec_mode = weak constant i8 1
 @__omp_offloading_2c_389eb_no_state_machine_weak_callee_l106_exec_mode = weak constant i8 1
-@2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @0, i32 0, i32 0) }, align 8
+@2 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 2, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @G = external global i32, align 4
 @V = external global i1, align 4
-@3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 322, i32 2, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @0, i32 0, i32 0) }, align 8
+@3 = private unnamed_addr constant %struct.ident_t { i32 0, i32 322, i32 2, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @0, i32 0, i32 0) }, align 8
 @llvm.compiler.used = appending global [8 x i8*] [i8* @__omp_offloading_2c_389eb_no_state_machine_needed_l14_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_l19_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_interprocedural_l35_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_with_fallback_l50_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_no_openmp_attr_l61_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_pure_l72_exec_mode, i8* @__omp_offloading_2c_389eb_simple_state_machine_interprocedural_nested_recursive_l86_exec_mode, i8* @__omp_offloading_2c_389eb_no_state_machine_weak_callee_l106_exec_mode], section "llvm.metadata"
 
 ; The second to last argument of __kmpc_target_init is set to false to indicate we do not need the generic runtime state machine.

@@ -3,10 +3,10 @@
 ; REQUIRES: asserts
 ; ModuleID = 'single_threaded_exeuction.c'
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
-@0 = private unnamed_addr constant [1 x b8] c"\00", align 1
-@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([1 x b8], [1 x b8]* @0, i32 0, i32 0) }, align 8
+@0 = private unnamed_addr constant [1 x i8] c"\00", align 1
+@1 = private unnamed_addr constant %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([1 x i8], [1 x i8]* @0, i32 0, i32 0) }, align 8
 
 
 ; CHECK-NOT: [openmp-opt] Basic block @kernel entry is executed by a single thread.

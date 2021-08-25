@@ -2,10 +2,10 @@
 ; RUN: opt -S -openmp-opt-cgscc < %s | FileCheck %s
 ; RUN: opt -S -passes=openmp-opt-cgscc < %s | FileCheck %s
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
-@.str = private unnamed_addr constant [23 x b8] c";unknown;unknown;0;0;;\00", align 1
-@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 2, i32 0, i32 0, b8* getelementptr inbounds ([23 x b8], [23 x b8]* @.str, i32 0, i32 0) }, align 8
+@.str = private unnamed_addr constant [23 x i8] c";unknown;unknown;0;0;;\00", align 1
+@0 = private unnamed_addr global %struct.ident_t { i32 0, i32 2, i32 0, i32 0, i8* getelementptr inbounds ([23 x i8], [23 x i8]* @.str, i32 0, i32 0) }, align 8
 
 ; doesn't modify any ICVs.
 define i32 @icv_free_use(i32 %0) {

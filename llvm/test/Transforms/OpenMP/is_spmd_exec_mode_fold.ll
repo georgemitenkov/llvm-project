@@ -2,7 +2,7 @@
 ; RUN: opt -S -passes=openmp-opt < %s | FileCheck %s
 target triple = "nvptx64"
 
-%struct.ident_t = type { i32, i32, i32, i32, b8* }
+%struct.ident_t = type { i32, i32, i32, i32, i8* }
 
 @is_spmd_exec_mode = weak constant i8 0
 @will_be_spmd_exec_mode = weak constant i8 1
